@@ -66,7 +66,7 @@
 
   /* ---------- auth ---------- */
   #auth{min-height:100vh;display:flex;flex-direction:column}
-  .auth-hero{background:linear-gradient(160deg,var(--mint),var(--peach));padding:22px 0 30px}
+  .auth-hero{background:linear-gradient(160deg,var(--mint),var(--peach));padding:22px 0 34px}
   .auth-hero h1{font-size:clamp(34px,8vw,52px);line-height:1.05;margin:28px 0 10px}
   .auth-hero h1 em{color:var(--green)}
   .auth-hero p{color:var(--muted);font-size:17px;margin:0}
@@ -179,6 +179,30 @@
   .modal h3{font-size:21px;margin-bottom:4px}
   .row-btns{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
   .toast{position:fixed;left:50%;bottom:calc(var(--navh) + 96px);transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;z-index:70;max-width:90%}
+  .getapp{display:inline-flex;align-items:center;gap:5px;background:var(--green);color:#fff;border:0;border-radius:999px;padding:7px 13px;font-size:14px;font-weight:600;white-space:nowrap;flex:none;box-shadow:0 2px 8px rgba(31,95,91,.25)}
+  .getapp:hover{background:var(--green-dark)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .chip{font-size:12.5px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--bg);border:1px solid var(--line);color:var(--muted)}
+  .chip-open{background:var(--peach);border-color:#F3D3B7;color:#9A5421}
+  .chip-ok{background:var(--mint);border-color:#C6E3DE;color:var(--green-dark)}
+  .card-main{display:flex;gap:12px;align-items:flex-start}
+  .thumb{width:72px;height:72px;border-radius:12px;object-fit:cover;flex:none;margin-top:12px;border:1px solid var(--line)}
+  .hw-photo{display:block;width:100%;max-height:420px;object-fit:contain;background:var(--bg);border-radius:14px;margin:10px 0;border:1px solid var(--line);cursor:zoom-in}
+  .photo-modal{background:rgba(0,0,0,.85);cursor:zoom-out}
+  .photo-modal img{max-width:100%;max-height:92vh;border-radius:8px}
+  .photo-preview{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+  .photo-preview img{max-width:100%;max-height:260px;border-radius:12px;border:1px solid var(--line)}
+  .privacy-tip{font-size:13px;color:#8A5A2B;background:var(--peach);border-radius:10px;padding:8px 12px;margin-top:10px}
+  .filters{display:flex;gap:8px;margin-bottom:12px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .two .loc-select{width:100%}
+  .two > div{min-width:0}
+  @media (max-width:420px){ nav.tabbar a{font-size:11px} }
+  .solve-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);flex-wrap:wrap;font-size:14px}
+  .solve-bar .btn{padding:9px 14px;font-size:14px}
+  .reply.best{background:#F1F9F7;border-radius:12px;padding-left:8px;padding-right:8px;border-bottom-color:transparent}
+  .best-tag{font-size:12px;font-weight:700;color:var(--green-dark);background:var(--mint);border-radius:999px;padding:2px 8px}
+  .hw-hello{background:linear-gradient(160deg,#E6EEFB,var(--mint))}
   .install{display:flex;align-items:center;gap:12px;background:var(--mint);border:1px solid #C6E3DE;border-radius:16px;padding:12px 14px;margin-bottom:14px}
   .install .ic{width:40px;height:40px;border-radius:10px;background:var(--green);color:#fff;display:grid;place-items:center;font-family:Fraunces,serif;font-size:19px;flex:none}
   .install .txt{flex:1;min-width:0;font-size:14px;line-height:1.35}
@@ -187,6 +211,10 @@
   .install .x{background:none;border:0;color:var(--muted);font-size:20px;padding:2px 4px;flex:none;line-height:1}
   .steps{margin:10px 0 0;padding-left:22px}
   .steps li{margin:8px 0}
+  .steps.big li{font-size:17px;margin:12px 0}
+  .ios-arrow{position:fixed;right:28px;bottom:calc(12px + env(safe-area-inset-bottom));font-size:40px;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.5);animation:bob 1s ease-in-out infinite;z-index:61;pointer-events:none}
+  @media (max-width:430px){ #auth .brand{font-size:0;gap:0} }
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(10px)}}
   .quote{background:var(--bg);border-radius:10px;padding:10px;margin:8px 0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px}
 </style>
 </head>
@@ -207,10 +235,11 @@
     <div class="wrap">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div class="brand"><div class="logo">P</div>Parents Meet <span>AI</span></div>
-        <button class="lang" data-lang-toggle></button>
+        <div style="display:flex;gap:8px;align-items:center"><span id="authGetApp"></span><button class="lang" data-lang-toggle></button></div>
       </div>
       <h1 data-i18n-html="heroTitle"></h1>
       <p data-i18n="heroText"></p>
+      <div id="authInstall" style="margin-top:16px"></div>
     </div>
   </div>
 
@@ -253,7 +282,6 @@
       <button class="btn btn-primary btn-block" style="margin-top:6px" type="submit" data-i18n="save"></button>
     </form>
   </div>
-  <div id="authInstall" style="max-width:440px;width:calc(100% - 32px);margin:-14px auto 18px"></div>
   <p class="wrap muted" style="font-size:13px;text-align:center;padding-bottom:24px" data-i18n="heroFoot"></p>
 </section>
 
@@ -265,6 +293,7 @@
   <nav class="tabbar"><div class="wrap">
     <a href="#/home" data-tab="home"><span class="ic">🏠</span><span data-i18n="navHome"></span></a>
     <a href="#/community" data-tab="community"><span class="ic">💬</span><span data-i18n="navCommunity"></span></a>
+    <a href="#/homework" data-tab="homework"><span class="ic">📚</span><span data-i18n="navHomework"></span></a>
     <a href="#/messages" data-tab="messages"><span class="ic">✉️</span><span data-i18n="navMessages"></span><span id="unreadBadge" class="badge hidden"></span></a>
     <a href="#/profile" data-tab="profile"><span class="ic">👤</span><span data-i18n="navProfile"></span></a>
   </div></nav>
@@ -291,7 +320,19 @@ const TEXT = {
     ageCheck:"I am a parent or guardian, 18 or older, and I will be kind and respectful.",
     forgot:"Forgot password?", resetTitle:"Reset your password", sendLink:"Send reset link", backToLogin:"Back to log in",
     newPwTitle:"Choose a new password", newPassword:"New password",
-    navHome:"Home", navCommunity:"Community", navMessages:"Messages", navProfile:"Profile",
+    navHome:"Home", navCommunity:"Community", navHomework:"Homework", navMessages:"Messages", navProfile:"Profile",
+    hwTitle:"Homework Help", hwSubtitle:"Stuck on a homework question? Ask other parents — and help someone else.",
+    askHw:"Ask a Homework Question", postQuestion:"Post question", hwTitleLabel:"What's the question?",
+    hwTitlePh:"e.g. How do I explain 3/4 ÷ 1/2 to my 5th grader?", hwBodyLabel:"Details (optional)",
+    hwBodyPh:"What has your child tried? Where are they stuck?", grade:"Grade", subject:"Subject",
+    chooseGrade:"Choose grade", chooseSubject:"Choose subject", allGrades:"All grades", allSubjects:"All subjects",
+    photoLabel:"Photo of the problem (optional)", addPhoto:"Take or choose a photo", removePhoto:"Remove photo",
+    photoTip:"Please cover or crop out your child's name, school and teacher before posting.",
+    errGrade:"Please choose a grade.", all:"All", needsHelp:"Needs help", solved:"Solved",
+    noHw:"No homework questions yet. Be the first to ask!", writeAnswer:"Write an answer or a hint…",
+    markSolved:"Mark as solved", reopen:"Reopen", markBest:"Best answer", bestAnswer:"Best answer",
+    askerTip:"Got your answer? Tap ⭐ on the most helpful reply.", solvedNote:"Marked as solved. Thank you!",
+    thanksBest:"Marked as best answer — thank you!",
     appTitle:"Parents Meet AI", subtitle:"Parents learning about AI together.", startDiscussion:"Start a Discussion",
     ideasTitle:"Not sure what to ask? Try one:", recent:"Recent discussions", popular:"Popular", recentTab:"Recent", seeAll:"See all",
     ideas:["How are parents using ChatGPT with their children?","Should children use AI for homework?","What AI tools are useful for elementary school students?","How much AI should children use?","How can parents teach children to use AI responsibly?","What do other parents think about AI in education?"],
@@ -324,8 +365,8 @@ const TEXT = {
     unitedStates:"United States", usAll:"United States (all states)", noLocalPosts:"No discussions from this location yet.",
     locationHint:"Only your state or country is shown — never your city or address.",
     installTitle:"Get the app on your phone", installText:"Free — adds a Parents Meet AI icon to your home screen.",
-    installBtn:"Install", installRow:"📱 Install on your phone", installed:"Installed! Look for the icon on your home screen.",
-    iosTitle:"Add to your iPhone", iosSteps:["Tap the Share button ⬆️ (bottom of Safari, or next to the address bar).","Scroll down and tap “Add to Home Screen”.","Tap “Add” in the top-right corner."],
+    installBtn:"Install", getApp:"Get App", inAppTitle:"Open in Safari first", inAppText:"This page is open inside another app (like WeChat). Tap ··· (top-right) → “Open in Safari” / “Open in Browser”, then tap “Get App” again.", installRow:"📱 Install on your phone", installed:"Installed! Look for the icon on your home screen.",
+    iosTitle:"3 taps to add the app", iosNote:"Apple doesn't allow one-tap installs from websites, so iPhone needs these 3 quick taps.", iosSteps:["Tap the ··· button at the bottom-right of the screen (or the Share button ⬆️).","Tap “Share”, then tap “Add to Home Screen” (scroll down if you don't see it).","Tap “Add”. Done! 🎉"],
     androidTitle:"Add to your Android phone", androidSteps:["Tap the ⋮ menu in the top-right corner of Chrome.","Tap “Install app” or “Add to Home screen”.","Tap “Install” to confirm."],
     desktopTitle:"Install on your phone", desktopText:"Open parentsmeetai.org on your phone, then follow these steps:", gotIt:"Got it",
   },
@@ -338,7 +379,19 @@ const TEXT = {
     ageCheck:"我是 18 岁以上的家长或监护人，并会友善、尊重地交流。",
     forgot:"忘记密码？", resetTitle:"重设密码", sendLink:"发送重设链接", backToLogin:"返回登录",
     newPwTitle:"设置新密码", newPassword:"新密码",
-    navHome:"首页", navCommunity:"社区", navMessages:"私信", navProfile:"我的",
+    navHome:"首页", navCommunity:"社区", navHomework:"作业", navMessages:"私信", navProfile:"我的",
+    hwTitle:"作业互助", hwSubtitle:"孩子的作业题卡住了？来问问其他家长，也帮帮别人。",
+    askHw:"提一个作业问题", postQuestion:"发布问题", hwTitleLabel:"是什么题目？",
+    hwTitlePh:"例如：怎么给五年级孩子讲 3/4 ÷ 1/2？", hwBodyLabel:"补充说明（可选）",
+    hwBodyPh:"孩子试过什么方法？卡在哪一步？", grade:"年级", subject:"科目",
+    chooseGrade:"选择年级", chooseSubject:"选择科目", allGrades:"所有年级", allSubjects:"所有科目",
+    photoLabel:"题目照片（可选）", addPhoto:"拍照或选择照片", removePhoto:"删除照片",
+    photoTip:"发布前请遮住或裁掉孩子的姓名、学校和老师名字。",
+    errGrade:"请选择年级。", all:"全部", needsHelp:"待解答", solved:"已解决",
+    noHw:"还没有作业问题，来问第一个吧！", writeAnswer:"写下你的解答或提示…",
+    markSolved:"标记为已解决", reopen:"重新打开", markBest:"最佳回答", bestAnswer:"最佳回答",
+    askerTip:"问题解决了？在最有帮助的回答上点 ⭐。", solvedNote:"已标记为解决，谢谢！",
+    thanksBest:"已设为最佳回答，谢谢！",
     appTitle:"Parents Meet AI", subtitle:"家长一起学习 AI。", startDiscussion:"发起讨论",
     ideasTitle:"不知道问什么？试试这些：", recent:"最新讨论", popular:"热门", recentTab:"最新", seeAll:"查看全部",
     ideas:["家长们是怎么和孩子一起用 ChatGPT 的？","孩子应该用 AI 写作业吗？","哪些 AI 工具适合小学生？","孩子用 AI 用多少比较合适？","家长怎样教孩子负责任地使用 AI？","其他家长怎么看 AI 在教育中的作用？"],
@@ -371,8 +424,8 @@ const TEXT = {
     unitedStates:"美国", usAll:"美国（所有州）", noLocalPosts:"这个地区还没有讨论。",
     locationHint:"只会显示州或国家，不会显示城市或地址。",
     installTitle:"把 App 装到手机上", installText:"免费——在手机主屏幕上添加 Parents Meet AI 图标。",
-    installBtn:"安装", installRow:"📱 安装到手机", installed:"安装好了！请在手机主屏幕上找图标。",
-    iosTitle:"添加到 iPhone", iosSteps:["点「分享」按钮 ⬆️（Safari 底部，或地址栏旁边）。","往下滑，点「添加到主屏幕」。","点右上角的「添加」。"],
+    installBtn:"安装", getApp:"下载 App", inAppTitle:"请先用浏览器打开", inAppText:"现在是在其他 App（比如微信）里打开的，无法安装。请点右上角 ··· →「在 Safari 中打开」/「在浏览器中打开」，然后再点「下载 App」。", installRow:"📱 安装到手机", installed:"安装好了！请在手机主屏幕上找图标。",
+    iosTitle:"3 步把 App 加到手机", iosNote:"苹果不允许网页一键安装，所以 iPhone 需要点这 3 下。", iosSteps:["点屏幕右下角的 ··· 按钮（或「分享」按钮 ⬆️）。","点「分享」，再点「添加到主屏幕」（看不到就往下滑）。","点「添加」，完成！🎉"],
     androidTitle:"添加到安卓手机", androidSteps:["点 Chrome 右上角的 ⋮ 菜单。","点「安装应用」或「添加到主屏幕」。","点「安装」确认。"],
     desktopTitle:"安装到手机", desktopText:"请在手机上打开 parentsmeetai.org，然后按下面的步骤操作：", gotIt:"知道了",
   }
@@ -393,6 +446,17 @@ let dmSub = null;       // realtime channel for unread badge
 let authMode = "login";
 const PROFILE_FIELDS = "id,display_name,avatar_url,location";
 /* Locations (optional, set once in the profile) */
+const GRADES = ["K","1","2","3","4","5","6","7","8","9","10","11","12"];
+const SUBJECTS = { math:["Math","数学"], reading:["Reading & Writing","阅读与写作"], science:["Science","科学"], social:["Social Studies","社会"], language:["Languages","外语"], other:["Other","其他"] };
+function gradeLabel(g){ if (!g) return ""; return g === "K" ? (lang === "zh" ? "幼儿园" : "Kindergarten") : (lang === "zh" ? g + " 年级" : "Grade " + g); }
+function subjectLabel(k){ return SUBJECTS[k] ? SUBJECTS[k][lang === "zh" ? 1 : 0] : ""; }
+function hwChips(p){
+  if (p.kind !== "homework") return null;
+  return h("div", { class:"chips" },
+    h("span", { class:"chip " + (p.solved ? "chip-ok" : "chip-open") }, p.solved ? "✅ " + t("solved") : "❓ " + t("needsHelp")),
+    p.grade ? h("span", { class:"chip" }, gradeLabel(p.grade)) : null,
+    p.subject ? h("span", { class:"chip" }, subjectLabel(p.subject)) : null);
+}
 const US_STATES = ["Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming","District of Columbia"];
 const OTHER_PLACES = { "Canada":"加拿大", "China":"中国", "Other":"其他" };
 function locLabel(v){
@@ -411,7 +475,7 @@ function locationSelect(value, forFilter){
   sel.value = value || "";
   return sel;
 }
-const POST_FIELDS = "id,title,body,created_at,reply_count,like_count,author_id,author:profiles!posts_author_id_fkey!inner(" + PROFILE_FIELDS + ")";
+const POST_FIELDS = "id,kind,grade,subject,image_url,solved,best_reply_id,title,body,created_at,reply_count,like_count,author_id,author:profiles!posts_author_id_fkey!inner(" + PROFILE_FIELDS + ")";
 
 /* ---------- tiny DOM helper (all user text goes in as textContent) ---------- */
 function h(tag, props, ...kids){
@@ -424,7 +488,7 @@ function h(tag, props, ...kids){
     else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
     else el.setAttribute(k, v === true ? "" : v);
   }
-  kids.flat().forEach(c => { if (c == null || c === false) return; el.append(c.nodeType ? c : document.createTextNode(String(c))); });
+  kids.flat(Infinity).forEach(c => { if (c == null || c === false) return; el.append(c.nodeType ? c : document.createTextNode(String(c))); });
   return el;
 }
 const COLORS = ["#1F5F5B","#E0874A","#3F6FB5","#8A4FB0","#2E7D32","#B5503F","#0F7C7C","#A06A12"];
@@ -578,6 +642,7 @@ function setTop(title, back){
   if (back) bar.append(h("button", { class:"back", "aria-label":"Back", onclick:() => history.length > 1 ? history.back() : (location.hash = back) }, "‹"));
   if (title) bar.append(h("h2", {}, title));
   else bar.append(h("div", { class:"brand", style:"flex:1" }, h("div", { class:"logo" }, "P"), "Parents Meet ", h("span", {}, "AI")));
+  const g = getAppButton(); if (g) bar.append(g);
 }
 function setTab(name){ document.querySelectorAll("nav.tabbar a").forEach(a => a.classList.toggle("active", a.dataset.tab === name)); }
 function setComposer(el){ const s = $("composerSlot"); s.innerHTML = ""; if (el) s.append(el); $("view").classList.toggle("has-composer", !!el); }
@@ -592,6 +657,8 @@ async function route(){
       case "community": setTab("community"); return await pageCommunity(view);
       case "new":       setTab("community"); return pageNew(view, decodeURIComponent(parts[1] || ""));
       case "post":      setTab("community"); return await pagePost(view, parseInt(parts[1], 10));
+      case "homework":  setTab("homework"); return await pageHomework(view);
+      case "ask":       setTab("homework"); return pageAsk(view);
       case "messages":  setTab("messages"); return parts[1] ? await pageThread(view, parts[1]) : await pageMessages(view);
       case "profile":   setTab("profile"); return await pageProfile(view, me.id);
       case "u":         setTab(parts[1] === me.id ? "profile" : "community"); return await pageProfile(view, parts[1]);
@@ -638,8 +705,12 @@ function postCard(p, liked){
   return h("article", { class:"card post-card", tabindex:"0", onclick:() => location.hash = "#/post/" + p.id,
                         onkeydown:e => { if (e.key === "Enter") location.hash = "#/post/" + p.id; } },
     whoLine(author, p.created_at),
-    h("div", { class:"post-title" }, p.title),
-    p.body ? h("p", { class:"post-body clamp" }, p.body) : null,
+    hwChips(p),
+    h("div", { class:"card-main" },
+      h("div", { style:"flex:1;min-width:0" },
+        h("div", { class:"post-title" }, p.title),
+        p.body ? h("p", { class:"post-body clamp" }, p.body) : null),
+      p.image_url ? h("img", { class:"thumb", src:p.image_url, alt:"", loading:"lazy" }) : null),
     h("div", { class:"bar" },
       likeButton("post", p, liked),
       h("span", { class:"pill" }, "💬 " + p.reply_count + " " + (p.reply_count === 1 ? t("reply1") : t("replies")))));
@@ -665,7 +736,7 @@ async function pageHome(view){
   view.append(h("div", { class:"section-title" }, h("h3", {}, t("recent")), h("a", { href:"#/community", class:"link" }, t("seeAll"))));
   const list = h("div", {}, h("p", { class:"muted" }, t("loading")));
   view.append(list);
-  const q = sb.from("posts").select(POST_FIELDS).order("created_at", { ascending:false }).limit(10);
+  const q = sb.from("posts").select(POST_FIELDS).eq("kind", "discussion").order("created_at", { ascending:false }).limit(10);
   const tmp = h("div"); const rows = await renderPostList(tmp, q);
   list.replaceChildren(...tmp.childNodes);
   if (!rows.length) list.append(h("div", { class:"empty" }, h("div", { class:"big" }, "🌱"), t("noPosts")));
@@ -690,7 +761,7 @@ async function pageCommunity(view){
   async function load(reset){
     const my = ++token;
     if (reset) { offset = 0; list.replaceChildren(h("p", { class:"muted" }, t("loading"))); }
-    let q = sb.from("posts").select(POST_FIELDS);
+    let q = sb.from("posts").select(POST_FIELDS).eq("kind", "discussion");
     if (term) q = q.or(`title.ilike.*${term}*,body.ilike.*${term}*`);
     if (communityLoc === "US:*") q = q.like("author.location", "US:%");
     else if (communityLoc) q = q.eq("author.location", communityLoc);
@@ -713,6 +784,132 @@ async function pageCommunity(view){
   input.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(() => {
     term = input.value.replace(/[,()*%\\"'.:]/g, " ").trim().slice(0, 60); load(true); }, 300); });
   paintSeg(); await load(true);
+}
+
+/* ---------- HOMEWORK HELP ---------- */
+let hwGrade = "", hwSubject = "", hwStatus = "all";
+function gradeSelect(value, forFilter, id){
+  const sel = h("select", { class:"loc-select", id: id || null, "aria-label":t("grade") });
+  sel.append(h("option", { value:"" }, forFilter ? t("allGrades") : t("chooseGrade")));
+  GRADES.forEach(g => sel.append(h("option", { value:g }, gradeLabel(g))));
+  sel.value = value || ""; return sel;
+}
+function subjectSelect(value, forFilter, id){
+  const sel = h("select", { class:"loc-select", id: id || null, "aria-label":t("subject") });
+  sel.append(h("option", { value:"" }, forFilter ? t("allSubjects") : t("chooseSubject")));
+  Object.keys(SUBJECTS).forEach(k => sel.append(h("option", { value:k }, subjectLabel(k))));
+  sel.value = value || ""; return sel;
+}
+async function pageHomework(view){
+  setTop(t("hwTitle"));
+  view.append(h("div", { class:"hello hw-hello" },
+    h("h1", { style:"font-size:26px" }, "📚 " + t("hwTitle")),
+    h("p", {}, t("hwSubtitle")),
+    h("button", { class:"btn btn-primary btn-big btn-block", onclick:() => location.hash = "#/ask" }, "✋ " + t("askHw"))));
+  const gSel = gradeSelect(hwGrade, true), sSel = subjectSelect(hwSubject, true);
+  const segAll = h("button", {}, t("all")), segOpen = h("button", {}, t("needsHelp")), segDone = h("button", {}, t("solved"));
+  const list = h("div");
+  const moreBtn = h("button", { class:"btn btn-ghost btn-block hidden" }, t("loadMore"));
+  view.append(h("div", { class:"filters" }, gSel, sSel), h("div", { class:"seg" }, segAll, segOpen, segDone), list, moreBtn);
+  const PAGE = 20; let offset = 0, token = 0;
+  async function load(reset){
+    const my = ++token;
+    if (reset) { offset = 0; list.replaceChildren(h("p", { class:"muted" }, t("loading"))); }
+    let q = sb.from("posts").select(POST_FIELDS).eq("kind", "homework");
+    if (hwGrade) q = q.eq("grade", hwGrade);
+    if (hwSubject) q = q.eq("subject", hwSubject);
+    if (hwStatus === "open") q = q.eq("solved", false);
+    if (hwStatus === "done") q = q.eq("solved", true);
+    q = q.order("created_at", { ascending:false }).range(offset, offset + PAGE - 1);
+    const tmp = h("div"); const rows = await renderPostList(tmp, q);
+    if (my !== token) return;
+    if (reset) list.replaceChildren();
+    list.append(...tmp.childNodes);
+    offset += rows.length;
+    moreBtn.classList.toggle("hidden", rows.length < PAGE);
+    if (reset && !rows.length) list.append(h("div", { class:"empty" }, h("div", { class:"big" }, "📚"), t("noHw")));
+  }
+  const paint = () => { segAll.classList.toggle("active", hwStatus === "all"); segOpen.classList.toggle("active", hwStatus === "open"); segDone.classList.toggle("active", hwStatus === "done"); };
+  segAll.onclick = () => { hwStatus = "all"; paint(); load(true); };
+  segOpen.onclick = () => { hwStatus = "open"; paint(); load(true); };
+  segDone.onclick = () => { hwStatus = "done"; paint(); load(true); };
+  gSel.onchange = () => { hwGrade = gSel.value; load(true); };
+  sSel.onchange = () => { hwSubject = sSel.value; load(true); };
+  moreBtn.onclick = () => load(false);
+  paint(); await load(true);
+}
+function shrinkPhoto(file, maxSide){
+  return new Promise((resolve, reject) => {
+    const img = new Image(); const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const k = Math.min(1, maxSide / Math.max(img.width, img.height));
+      const c = document.createElement("canvas");
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      c.toBlob(b => b ? resolve(b) : reject(new Error("image")), "image/jpeg", 0.85);
+    };
+    img.onerror = () => reject(new Error("image"));
+    img.src = url;
+  });
+}
+function pageAsk(view){
+  setTop(t("askHw"), "#/homework");
+  const title = h("input", { type:"text", id:"hwtitle", maxlength:"150", placeholder:t("hwTitlePh") });
+  const gSel = gradeSelect("", false, "hwgrade"), sSel = subjectSelect("math", false, "hwsubject");
+  const body = h("textarea", { id:"hwbody", rows:"5", maxlength:"5000", placeholder:t("hwBodyPh") });
+  const fileIn = h("input", { type:"file", accept:"image/*", class:"hidden", id:"hwphoto" });
+  const preview = h("div", { class:"photo-preview hidden" });
+  let photo = null;
+  const photoBtn = h("label", { class:"btn btn-ghost btn-block", for:"hwphoto" }, "📷 " + t("addPhoto"));
+  fileIn.addEventListener("change", async () => {
+    const f = fileIn.files[0]; if (!f) return;
+    try {
+      photo = await shrinkPhoto(f, 1600);
+      const url = URL.createObjectURL(photo);
+      preview.replaceChildren(h("img", { src:url, alt:"" }),
+        h("button", { type:"button", class:"mini danger", onclick:() => { photo = null; fileIn.value = ""; preview.classList.add("hidden"); photoBtn.classList.remove("hidden"); } }, "✕ " + t("removePhoto")));
+      preview.classList.remove("hidden"); photoBtn.classList.add("hidden");
+    } catch (e) { toast(t("photoFail") + friendly(e)); }
+  });
+  const msg = h("div", { class:"err" });
+  const btn = h("button", { class:"btn btn-primary btn-block btn-big", type:"submit" }, t("postQuestion"));
+  gSel.addEventListener("change", () => { msg.textContent = ""; });
+  const form = h("form", { class:"card", novalidate:true },
+    h("label", { class:"field", for:"hwtitle", style:"margin-top:0" }, t("hwTitleLabel")), title,
+    h("div", { class:"two" },
+      h("div", {}, h("label", { class:"field", for:"hwgrade" }, t("grade")), gSel),
+      h("div", {}, h("label", { class:"field", for:"hwsubject" }, t("subject")), sSel)),
+    h("label", { class:"field" }, t("photoLabel")), photoBtn, fileIn, preview,
+    h("div", { class:"privacy-tip" }, "🔒 " + t("photoTip")),
+    h("label", { class:"field", for:"hwbody" }, t("hwBodyLabel")), body, msg,
+    h("div", { style:"margin-top:8px" }, btn));
+  form.addEventListener("submit", async e => {
+    e.preventDefault(); msg.textContent = "";
+    if (!title.value.trim()) return msg.textContent = t("errTitle");
+    if (!gSel.value) return msg.textContent = t("errGrade");
+    btn.disabled = true; btn.textContent = t("wait");
+    try {
+      let image_url = null;
+      if (photo) {
+        const path = me.id + "/hw-" + Date.now() + ".jpg";
+        const up = await sb.storage.from("homework").upload(path, photo, { contentType:"image/jpeg" });
+        if (up.error) throw up.error;
+        image_url = sb.storage.from("homework").getPublicUrl(path).data.publicUrl;
+      }
+      const { data, error } = await sb.from("posts").insert({
+        kind:"homework", title: title.value.trim(), body: body.value.trim(),
+        grade: gSel.value, subject: sSel.value || null, image_url }).select("id").single();
+      if (error) throw error;
+      history.replaceState(null, "", "#/post/" + data.id); route();
+    } catch (err) { msg.textContent = friendly(err); btn.disabled = false; btn.textContent = t("postQuestion"); }
+  });
+  view.append(form);
+  title.focus();
+}
+function viewPhoto(url){
+  const m = h("div", { class:"modal photo-modal", onclick:() => m.remove() }, h("img", { src:url, alt:"" }));
+  document.body.append(m);
 }
 
 /* ---------- NEW DISCUSSION ---------- */
@@ -773,13 +970,34 @@ async function pagePost(view, id){
   if (error) throw error;
   if (!p) return view.append(h("div", { class:"empty" }, h("div", { class:"big" }, "🍃"), t("notFound")));
   const liked = await likedPostIds([p.id]);
+  const isHw = p.kind === "homework", asker = p.author_id === me.id;
+  if (isHw) { setTop(t("hwTitle"), "#/homework"); setTab("homework"); }
   const replyCount = h("span", { class:"pill" }, "💬 " + p.reply_count);
+  const chipsSlot = h("div");
+  const solveBar = h("div");
+  function paintSolved(){
+    chipsSlot.replaceChildren(hwChips(p) || "");
+    solveBar.replaceChildren();
+    if (isHw && asker) {
+      solveBar.append(h("div", { class:"solve-bar" },
+        h("span", { class:"muted" }, p.solved ? t("solvedNote") : t("askerTip")),
+        h("button", { class:"btn " + (p.solved ? "btn-ghost" : "btn-primary"), onclick: async () => {
+          const { error } = await sb.rpc("set_solved", { p_post:p.id, p_solved:!p.solved, p_best: p.solved ? null : p.best_reply_id });
+          if (error) return toast(friendly(error));
+          p.solved = !p.solved; if (!p.solved) p.best_reply_id = null; paintSolved(); paintBest();
+        } }, p.solved ? t("reopen") : "✅ " + t("markSolved"))));
+    }
+  }
   view.append(h("article", { class:"card op" },
     whoLine(p.author || { id:p.author_id, display_name:"Parent" }, p.created_at),
+    chipsSlot,
     h("h1", { class:"post-title" }, p.title),
+    p.image_url ? h("img", { class:"hw-photo", src:p.image_url, alt:t("photoLabel"), onclick:() => viewPhoto(p.image_url) }) : null,
     p.body ? h("p", { class:"post-body" }, p.body) : null,
     h("div", { class:"bar" }, likeButton("post", p, liked.has(p.id)), replyCount,
-      actionsFor("post", p, () => { location.hash = "#/community"; }))));
+      actionsFor("post", p, () => { location.hash = isHw ? "#/homework" : "#/community"; })),
+    solveBar));
+  paintSolved();
 
   const list = h("div", { class:"card", style:"padding:4px 16px" });
   view.append(list);
@@ -796,16 +1014,34 @@ async function pagePost(view, id){
   const emptyEl = h("p", { class:"muted", style:"text-align:center;padding:14px 0" }, t("noReplies"));
   let count = p.reply_count;
   const paintCount = () => { replyCount.textContent = "💬 " + count; emptyEl.classList.toggle("hidden", list.querySelector(".reply") != null); };
+  function paintBest(){
+    list.querySelectorAll(".reply").forEach(el => {
+      const rid = Number(el.dataset.rid), best = isHw && p.best_reply_id === rid;
+      el.classList.toggle("best", best);
+      const tag = el.querySelector(".best-tag"); if (tag) tag.classList.toggle("hidden", !best);
+      const b = el.querySelector(".best-btn"); if (b) b.classList.toggle("hidden", best);
+    });
+  }
   function addReply(r, isLiked){
     if (shown.has(r.id)) return; shown.add(r.id);
     const author = r.author || { id:r.author_id, display_name:"Parent" };
-    const el = h("div", { class:"reply", id:"r" + r.id },
+    const bestBtn = (isHw && asker && r.author_id !== me.id) ? h("button", { class:"mini best-btn", onclick: async () => {
+      const { error } = await sb.rpc("set_solved", { p_post:p.id, p_solved:true, p_best:r.id });
+      if (error) return toast(friendly(error));
+      p.solved = true; p.best_reply_id = r.id; paintSolved(); paintBest(); toast(t("thanksBest"));
+    } }, "⭐ " + t("markBest")) : null;
+    const el = h("div", { class:"reply", id:"r" + r.id, "data-rid": String(r.id) },
       h("button", { class:"namebtn", style:"background:none;border:0;padding:0", onclick:() => location.hash = "#/u/" + author.id }, avatar(author, "s")),
       h("div", { class:"content" },
-        h("div", { class:"meta" }, h("b", {}, author.display_name || "Parent"), h("span", { class:"muted", style:"font-size:13px" }, ago(r.created_at))),
+        h("div", { class:"meta" }, h("b", {}, author.display_name || "Parent"), h("span", { class:"muted", style:"font-size:13px" }, ago(r.created_at)),
+          h("span", { class:"best-tag hidden" }, "⭐ " + t("bestAnswer"))),
         h("div", { class:"body" }, r.body),
-        h("div", { class:"bar" }, likeButton("reply", r, isLiked), actionsFor("reply", r, () => { el.remove(); shown.delete(r.id); count--; paintCount(); }))));
+        h("div", { class:"bar" }, likeButton("reply", r, isLiked), bestBtn, actionsFor("reply", r, () => {
+          el.remove(); shown.delete(r.id); count--; paintCount();
+          if (p.best_reply_id === r.id) { p.best_reply_id = null; paintSolved(); }
+        }))));
     list.append(el);
+    paintBest();
   }
   list.append(emptyEl);
   (reps || []).forEach(r => addReply(r, likedReplies.has(r.id)));
@@ -821,7 +1057,7 @@ async function pagePost(view, id){
   subs.push(ch);
 
   // composer
-  const ta = h("textarea", { rows:"1", maxlength:"3000", placeholder:t("writeReply"), "aria-label":t("writeReply") });
+  const ta = h("textarea", { rows:"1", maxlength:"3000", placeholder: isHw ? t("writeAnswer") : t("writeReply"), "aria-label":t("writeReply") });
   const send = h("button", { class:"btn btn-primary", type:"submit" }, t("send"));
   const form = h("form", {}, h("div", { class:"wrap" }, ta, send));
   ta.addEventListener("input", () => { ta.style.height = "auto"; ta.style.height = Math.min(ta.scrollHeight, 140) + "px"; });
@@ -1121,19 +1357,30 @@ let installEvt = null;
 const isStandalone = () => window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
 const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 const isMobile = () => isIOS() || /android|mobile/i.test(navigator.userAgent);
+const inAppBrowser = () => /MicroMessenger|WeChat|FBAN|FBAV|Instagram|Line\/|WhatsApp/i.test(navigator.userAgent);
+function getAppButton(){
+  if (isStandalone()) return null;
+  return h("button", { class:"getapp", onclick:doInstall, "aria-label":t("getApp") }, "📱 " + t("getApp"));
+}
 function installDismissed(){ try { return localStorage.getItem("pmai-install-hide") === "1"; } catch(e) { return false; } }
 window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; renderAuthInstall(); });
 window.addEventListener("appinstalled", () => { installEvt = null; document.querySelectorAll(".install").forEach(x => x.remove()); toast(t("installed")); });
 function showInstallHelp(){
+  if (inAppBrowser()) {
+    const m0 = modal([h("h3", {}, t("inAppTitle")), h("p", { style:"margin:8px 0 0" }, t("inAppText")),
+      h("div", { class:"row-btns" }, h("button", { class:"btn btn-primary", onclick:() => m0.remove() }, t("gotIt")))]);
+    return;
+  }
   const ios = isIOS(), android = !ios && /android/i.test(navigator.userAgent);
   const block = (title, steps) => [h("h3", { style:"margin-top:12px;font-size:18px" }, title), h("ol", { class:"steps" }, steps.map(x => h("li", {}, x)))];
   const m = modal([
     h("h3", {}, ios ? t("iosTitle") : android ? t("androidTitle") : t("desktopTitle")),
-    ios ? h("ol", { class:"steps" }, t("iosSteps").map(x => h("li", {}, x)))
+    ios ? [h("p", { class:"muted", style:"margin:4px 0 0;font-size:13.5px" }, t("iosNote")), h("ol", { class:"steps big" }, t("iosSteps").map(x => h("li", {}, x)))]
         : android ? h("ol", { class:"steps" }, t("androidSteps").map(x => h("li", {}, x)))
         : [h("p", { class:"muted", style:"margin:6px 0 0" }, t("desktopText")), block("iPhone", t("iosSteps")), block("Android", t("androidSteps"))],
     h("div", { class:"row-btns" }, h("button", { class:"btn btn-primary", onclick:() => m.remove() }, t("gotIt")))
   ]);
+  if (ios) { const arrow = h("div", { class:"ios-arrow", "aria-hidden":"true" }, "⬇"); m.append(arrow); }
 }
 async function doInstall(){
   if (installEvt) {
@@ -1151,7 +1398,10 @@ function installBanner(){
     h("button", { class:"x", "aria-label":t("close"), onclick:() => { try { localStorage.setItem("pmai-install-hide", "1"); } catch(e) {} el.remove(); } }, "×"));
   return el;
 }
-function renderAuthInstall(){ const slot = $("authInstall"); if (!slot) return; slot.replaceChildren(); const b = installBanner(); if (b) slot.append(b); }
+function renderAuthInstall(){
+  const slot = $("authInstall"); if (slot) { slot.replaceChildren(); const b = installBanner(); if (b) slot.append(b); }
+  const g = $("authGetApp"); if (g) { g.replaceChildren(); const btn = getAppButton(); if (btn) g.append(btn); }
+}
 
 applyStaticText(); setAuthMode("login"); renderAuthInstall();
 if (!window.supabase || SUPABASE_URL.startsWith("PASTE") || SUPABASE_ANON_KEY.startsWith("PASTE")) {
