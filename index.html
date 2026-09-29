@@ -179,6 +179,14 @@
   .modal h3{font-size:21px;margin-bottom:4px}
   .row-btns{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
   .toast{position:fixed;left:50%;bottom:calc(var(--navh) + 96px);transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;z-index:70;max-width:90%}
+  .install{display:flex;align-items:center;gap:12px;background:var(--mint);border:1px solid #C6E3DE;border-radius:16px;padding:12px 14px;margin-bottom:14px}
+  .install .ic{width:40px;height:40px;border-radius:10px;background:var(--green);color:#fff;display:grid;place-items:center;font-family:Fraunces,serif;font-size:19px;flex:none}
+  .install .txt{flex:1;min-width:0;font-size:14px;line-height:1.35}
+  .install .txt b{display:block;font-size:15px}
+  .install .btn{padding:9px 14px;font-size:14px;flex:none}
+  .install .x{background:none;border:0;color:var(--muted);font-size:20px;padding:2px 4px;flex:none;line-height:1}
+  .steps{margin:10px 0 0;padding-left:22px}
+  .steps li{margin:8px 0}
   .quote{background:var(--bg);border-radius:10px;padding:10px;margin:8px 0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px}
 </style>
 </head>
@@ -245,6 +253,7 @@
       <button class="btn btn-primary btn-block" style="margin-top:6px" type="submit" data-i18n="save"></button>
     </form>
   </div>
+  <div id="authInstall" style="max-width:440px;width:calc(100% - 32px);margin:-14px auto 18px"></div>
   <p class="wrap muted" style="font-size:13px;text-align:center;padding-bottom:24px" data-i18n="heroFoot"></p>
 </section>
 
@@ -314,6 +323,11 @@ const TEXT = {
     location:"Location", locationOptional:"Location (optional)", allLocations:"All locations", noLocation:"Prefer not to say",
     unitedStates:"United States", usAll:"United States (all states)", noLocalPosts:"No discussions from this location yet.",
     locationHint:"Only your state or country is shown — never your city or address.",
+    installTitle:"Get the app on your phone", installText:"Free — adds a Parents Meet AI icon to your home screen.",
+    installBtn:"Install", installRow:"📱 Install on your phone", installed:"Installed! Look for the icon on your home screen.",
+    iosTitle:"Add to your iPhone", iosSteps:["Tap the Share button ⬆️ (bottom of Safari, or next to the address bar).","Scroll down and tap “Add to Home Screen”.","Tap “Add” in the top-right corner."],
+    androidTitle:"Add to your Android phone", androidSteps:["Tap the ⋮ menu in the top-right corner of Chrome.","Tap “Install app” or “Add to Home screen”.","Tap “Install” to confirm."],
+    desktopTitle:"Install on your phone", desktopText:"Open parentsmeetai.org on your phone, then follow these steps:", gotIt:"Got it",
   },
   zh:{
     langBtn:"EN", langName:"中文",
@@ -356,6 +370,11 @@ const TEXT = {
     location:"地区", locationOptional:"地区（可选）", allLocations:"所有地区", noLocation:"不公开",
     unitedStates:"美国", usAll:"美国（所有州）", noLocalPosts:"这个地区还没有讨论。",
     locationHint:"只会显示州或国家，不会显示城市或地址。",
+    installTitle:"把 App 装到手机上", installText:"免费——在手机主屏幕上添加 Parents Meet AI 图标。",
+    installBtn:"安装", installRow:"📱 安装到手机", installed:"安装好了！请在手机主屏幕上找图标。",
+    iosTitle:"添加到 iPhone", iosSteps:["点「分享」按钮 ⬆️（Safari 底部，或地址栏旁边）。","往下滑，点「添加到主屏幕」。","点右上角的「添加」。"],
+    androidTitle:"添加到安卓手机", androidSteps:["点 Chrome 右上角的 ⋮ 菜单。","点「安装应用」或「添加到主屏幕」。","点「安装」确认。"],
+    desktopTitle:"安装到手机", desktopText:"请在手机上打开 parentsmeetai.org，然后按下面的步骤操作：", gotIt:"知道了",
   }
 };
 
@@ -465,6 +484,7 @@ function applyStaticText(){
   document.querySelectorAll("[data-i18n-html]").forEach(el => el.innerHTML = t(el.dataset.i18nHtml));
   document.querySelectorAll("[data-lang-toggle]").forEach(el => el.textContent = t("langBtn"));
   $("authBtn").textContent = authMode === "signup" ? t("signup") : t("login");
+  if (typeof renderAuthInstall === "function") renderAuthInstall();
 }
 function setLang(l){
   lang = l; try { localStorage.setItem("pmai-lang", l); } catch(e) {}
@@ -635,6 +655,7 @@ async function renderPostList(container, query){
 /* ---------- HOME ---------- */
 async function pageHome(view){
   setTop(null);
+  const ib = installBanner(); if (ib) view.append(ib);
   view.append(h("div", { class:"hello" },
     h("h1", {}, "Parents Meet ", h("span", {}, "AI")),
     h("p", {}, t("subtitle")),
@@ -983,6 +1004,7 @@ async function pageProfile(view, userId){
     view.append(h("div", { class:"section-title" }, h("h3", {}, t("settings"))));
     view.append(h("div", { class:"card settings", style:"padding:4px 14px" },
       h("button", { class:"row", onclick:() => setLang(lang === "en" ? "zh" : "en") }, h("span", {}, t("language")), h("span", {}, t("langName") + " ⇄ " + t("langBtn"))),
+      !isStandalone() ? h("button", { class:"row", onclick:doInstall }, h("span", {}, t("installRow")), h("span", {}, "›")) : null,
       h("button", { class:"row", onclick:changePassword }, h("span", {}, t("changePassword")), h("span", {}, "›")),
       myProfile.is_admin ? h("button", { class:"row", onclick:showReports }, h("span", {}, "🛡️ " + t("adminReports")), h("span", {}, "›")) : null,
       h("button", { class:"row", style:"color:var(--red)", onclick:async () => { await sb.auth.signOut(); } }, h("span", {}, t("logout")), h("span", {}, ""))));
@@ -1092,7 +1114,46 @@ async function showReports(){
 /* =====================================================================
    START
    ===================================================================== */
-applyStaticText(); setAuthMode("login");
+/* =====================================================================
+   INSTALL ON PHONE (web app / PWA)
+   ===================================================================== */
+let installEvt = null;
+const isStandalone = () => window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const isMobile = () => isIOS() || /android|mobile/i.test(navigator.userAgent);
+function installDismissed(){ try { return localStorage.getItem("pmai-install-hide") === "1"; } catch(e) { return false; } }
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; renderAuthInstall(); });
+window.addEventListener("appinstalled", () => { installEvt = null; document.querySelectorAll(".install").forEach(x => x.remove()); toast(t("installed")); });
+function showInstallHelp(){
+  const ios = isIOS(), android = !ios && /android/i.test(navigator.userAgent);
+  const block = (title, steps) => [h("h3", { style:"margin-top:12px;font-size:18px" }, title), h("ol", { class:"steps" }, steps.map(x => h("li", {}, x)))];
+  const m = modal([
+    h("h3", {}, ios ? t("iosTitle") : android ? t("androidTitle") : t("desktopTitle")),
+    ios ? h("ol", { class:"steps" }, t("iosSteps").map(x => h("li", {}, x)))
+        : android ? h("ol", { class:"steps" }, t("androidSteps").map(x => h("li", {}, x)))
+        : [h("p", { class:"muted", style:"margin:6px 0 0" }, t("desktopText")), block("iPhone", t("iosSteps")), block("Android", t("androidSteps"))],
+    h("div", { class:"row-btns" }, h("button", { class:"btn btn-primary", onclick:() => m.remove() }, t("gotIt")))
+  ]);
+}
+async function doInstall(){
+  if (installEvt) {
+    installEvt.prompt();
+    const choice = await installEvt.userChoice.catch(() => null);
+    if (choice && choice.outcome === "accepted") installEvt = null;
+  } else showInstallHelp();
+}
+function installBanner(){
+  if (isStandalone() || installDismissed() || (!isMobile() && !installEvt)) return null;
+  const el = h("div", { class:"install", role:"region", "aria-label":t("installTitle") },
+    h("div", { class:"ic", "aria-hidden":"true" }, "P"),
+    h("div", { class:"txt" }, h("b", {}, t("installTitle")), t("installText")),
+    h("button", { class:"btn btn-primary", onclick:doInstall }, t("installBtn")),
+    h("button", { class:"x", "aria-label":t("close"), onclick:() => { try { localStorage.setItem("pmai-install-hide", "1"); } catch(e) {} el.remove(); } }, "×"));
+  return el;
+}
+function renderAuthInstall(){ const slot = $("authInstall"); if (!slot) return; slot.replaceChildren(); const b = installBanner(); if (b) slot.append(b); }
+
+applyStaticText(); setAuthMode("login"); renderAuthInstall();
 if (!window.supabase || SUPABASE_URL.startsWith("PASTE") || SUPABASE_ANON_KEY.startsWith("PASTE")) {
   show("setup");
 } else {
