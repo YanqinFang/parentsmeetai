@@ -124,6 +124,9 @@
   .mini.danger:hover{color:var(--red)}
 
   .toolbar{display:flex;gap:8px;margin-bottom:12px}
+  .locbar{display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:14px}
+  .loc-select{flex:1;min-width:0;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font:inherit;font-size:15px;color:var(--ink)}
+  .loc-select:focus{outline:2px solid var(--green);border-color:transparent}
   .seg{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:3px;margin-bottom:12px}
   .seg button{flex:1;border:0;background:none;padding:8px;border-radius:9px;font-weight:600;color:var(--muted);font-size:14px}
   .seg button.active{background:var(--mint);color:var(--green-dark)}
@@ -308,6 +311,9 @@ const TEXT = {
     alreadyUser:"This email is already registered. Try logging in.", genericErr:"Something went wrong: ",
     noReports:"No reports right now. 🎉", reportsCount:"report(s)", dismiss:"Dismiss", deleteContent:"Delete content",
     aPost:"Post", aReply:"Reply", open:"Open", you:"You", notFound:"This discussion was deleted or doesn't exist.",
+    location:"Location", locationOptional:"Location (optional)", allLocations:"All locations", noLocation:"Prefer not to say",
+    unitedStates:"United States", usAll:"United States (all states)", noLocalPosts:"No discussions from this location yet.",
+    locationHint:"Only your state or country is shown — never your city or address.",
   },
   zh:{
     langBtn:"EN", langName:"中文",
@@ -347,6 +353,9 @@ const TEXT = {
     alreadyUser:"这个邮箱已经注册过了，请直接登录。", genericErr:"出错了：",
     noReports:"目前没有举报。🎉", reportsCount:"次举报", dismiss:"忽略", deleteContent:"删除内容",
     aPost:"帖子", aReply:"回复", open:"打开", you:"我", notFound:"这个讨论已被删除或不存在。",
+    location:"地区", locationOptional:"地区（可选）", allLocations:"所有地区", noLocation:"不公开",
+    unitedStates:"美国", usAll:"美国（所有州）", noLocalPosts:"这个地区还没有讨论。",
+    locationHint:"只会显示州或国家，不会显示城市或地址。",
   }
 };
 
@@ -363,8 +372,27 @@ let sb = null, me = null, myProfile = null;
 let subs = [];          // realtime channels for the current page
 let dmSub = null;       // realtime channel for unread badge
 let authMode = "login";
-const PROFILE_FIELDS = "id,display_name,avatar_url";
-const POST_FIELDS = "id,title,body,created_at,reply_count,like_count,author_id,author:profiles!posts_author_id_fkey(" + PROFILE_FIELDS + ")";
+const PROFILE_FIELDS = "id,display_name,avatar_url,location";
+/* Locations (optional, set once in the profile) */
+const US_STATES = ["Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming","District of Columbia"];
+const OTHER_PLACES = { "Canada":"加拿大", "China":"中国", "Other":"其他" };
+function locLabel(v){
+  if (!v) return "";
+  if (v.startsWith("US:")) return v.slice(3);
+  return lang === "zh" ? (OTHER_PLACES[v] || v) : v;
+}
+function locationSelect(value, forFilter){
+  const sel = h("select", { class:"loc-select", "aria-label":t("location") });
+  sel.append(h("option", { value:"" }, forFilter ? t("allLocations") : t("noLocation")));
+  const us = h("optgroup", { label:t("unitedStates") });
+  if (forFilter) us.append(h("option", { value:"US:*" }, t("usAll")));
+  US_STATES.forEach(st => us.append(h("option", { value:"US:" + st }, st)));
+  sel.append(us);
+  Object.keys(OTHER_PLACES).forEach(k => sel.append(h("option", { value:k }, lang === "zh" ? OTHER_PLACES[k] : k)));
+  sel.value = value || "";
+  return sel;
+}
+const POST_FIELDS = "id,title,body,created_at,reply_count,like_count,author_id,author:profiles!posts_author_id_fkey!inner(" + PROFILE_FIELDS + ")";
 
 /* ---------- tiny DOM helper (all user text goes in as textContent) ---------- */
 function h(tag, props, ...kids){
@@ -514,7 +542,7 @@ async function boot(){
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { show("auth"); return; }
   me = session.user;
-  const { data: prof } = await sb.from("profiles").select("id,display_name,bio,avatar_url,is_admin,created_at").eq("id", me.id).maybeSingle();
+  const { data: prof } = await sb.from("profiles").select("id,display_name,bio,avatar_url,location,is_admin,created_at").eq("id", me.id).maybeSingle();
   myProfile = prof || { id: me.id, display_name: (me.user_metadata || {}).display_name || "Parent", bio:"", avatar_url:null, is_admin:false, created_at:new Date().toISOString() };
   show("app");
   watchUnread();
@@ -583,7 +611,7 @@ function whoLine(p, iso){
   return h("div", { class:"who" },
     h("button", { class:"namebtn", onclick:e => { e.stopPropagation(); location.hash = "#/u/" + p.id; }, "aria-label": p.display_name }, avatar(p, "s")),
     h("div", {}, h("button", { class:"namebtn n", onclick:e => { e.stopPropagation(); location.hash = "#/u/" + p.id; } }, p.display_name || "Parent"),
-                 h("div", { class:"t" }, ago(iso))));
+                 h("div", { class:"t" }, ago(iso) + (p.location ? " · 📍 " + locLabel(p.location) : ""))));
 }
 function postCard(p, liked){
   const author = p.author || { id:p.author_id, display_name:"Parent" };
@@ -623,7 +651,7 @@ async function pageHome(view){
 }
 
 /* ---------- COMMUNITY ---------- */
-let communitySort = "recent";
+let communitySort = "recent", communityLoc = "";
 async function pageCommunity(view){
   setTop(t("navCommunity"));
   const input = h("input", { type:"search", placeholder:t("search"), "aria-label":t("search") });
@@ -631,7 +659,11 @@ async function pageCommunity(view){
   const segRecent = h("button", {}, t("recentTab")), segPop = h("button", {}, t("popular"));
   const list = h("div");
   const moreBtn = h("button", { class:"btn btn-ghost btn-block hidden" }, t("loadMore"));
-  view.append(h("div", { class:"toolbar" }, input, newBtn), h("div", { class:"seg" }, segRecent, segPop), list, moreBtn);
+  const locSel = locationSelect(communityLoc, true);
+  locSel.addEventListener("change", () => { communityLoc = locSel.value; load(true); });
+  view.append(h("div", { class:"toolbar" }, input, newBtn),
+    h("div", { class:"locbar" }, h("span", { class:"muted" }, "📍 " + t("location") + ":"), locSel),
+    h("div", { class:"seg" }, segRecent, segPop), list, moreBtn);
 
   const PAGE = 20; let offset = 0, term = "", token = 0;
   async function load(reset){
@@ -639,6 +671,8 @@ async function pageCommunity(view){
     if (reset) { offset = 0; list.replaceChildren(h("p", { class:"muted" }, t("loading"))); }
     let q = sb.from("posts").select(POST_FIELDS);
     if (term) q = q.or(`title.ilike.*${term}*,body.ilike.*${term}*`);
+    if (communityLoc === "US:*") q = q.like("author.location", "US:%");
+    else if (communityLoc) q = q.eq("author.location", communityLoc);
     q = communitySort === "popular" ? q.order("score", { ascending:false }).order("created_at", { ascending:false })
                                     : q.order("created_at", { ascending:false });
     q = q.range(offset, offset + PAGE - 1);
@@ -648,7 +682,7 @@ async function pageCommunity(view){
     list.append(...tmp.childNodes);
     offset += rows.length;
     moreBtn.classList.toggle("hidden", rows.length < PAGE);
-    if (reset && !rows.length) list.append(h("div", { class:"empty" }, h("div", { class:"big" }, term ? "🔍" : "🌱"), term ? t("noResults") : t("noPosts")));
+    if (reset && !rows.length) list.append(h("div", { class:"empty" }, h("div", { class:"big" }, (term || communityLoc) ? "🔍" : "🌱"), term ? t("noResults") : communityLoc ? t("noLocalPosts") : t("noPosts")));
   }
   const paintSeg = () => { segRecent.classList.toggle("active", communitySort === "recent"); segPop.classList.toggle("active", communitySort === "popular"); };
   segRecent.onclick = () => { communitySort = "recent"; paintSeg(); load(true); };
@@ -896,7 +930,7 @@ async function pageProfile(view, userId){
   const mine = userId === me.id;
   let p = myProfile;
   if (!mine) {
-    const { data, error } = await sb.from("profiles").select("id,display_name,bio,avatar_url,created_at").eq("id", userId).maybeSingle();
+    const { data, error } = await sb.from("profiles").select("id,display_name,bio,avatar_url,location,created_at").eq("id", userId).maybeSingle();
     if (error) throw error;
     if (!data) { setTop(t("profile"), "#/home"); return view.append(h("div", { class:"empty" }, t("notFound"))); }
     p = data;
@@ -910,6 +944,7 @@ async function pageProfile(view, userId){
   view.append(h("div", { class:"card prof" },
     avWrap,
     h("h2", {}, p.display_name),
+    p.location ? h("div", { class:"muted", style:"font-size:14px;margin-top:2px" }, "📍 " + locLabel(p.location)) : null,
     h("div", { class:"bio" }, p.bio || t("noBio")),
     h("div", { class:"muted", style:"font-size:13px;margin-bottom:14px" }, t("memberSince") + " " + since),
     mine ? h("button", { class:"btn btn-ghost", onclick:editProfile }, "✎ " + t("editProfile"))
@@ -956,16 +991,19 @@ async function pageProfile(view, userId){
 function editProfile(){
   const name = h("input", { type:"text", maxlength:"40", id:"ename" }); name.value = myProfile.display_name;
   const bio = h("textarea", { rows:"3", maxlength:"280", id:"ebio", placeholder:t("bioPh") }); bio.value = myProfile.bio || "";
+  const loc = locationSelect(myProfile.location, false); loc.id = "eloc";
   const msg = h("div", { class:"err" });
   const m = modal([
     h("h3", {}, t("editProfile")),
     h("label", { class:"field", for:"ename" }, t("name")), name,
-    h("label", { class:"field", for:"ebio" }, t("bio")), bio, msg,
+    h("label", { class:"field", for:"ebio" }, t("bio")), bio,
+    h("label", { class:"field", for:"eloc" }, t("locationOptional")), loc,
+    h("div", { class:"muted", style:"font-size:12.5px;margin-top:4px" }, t("locationHint")), msg,
     h("div", { class:"row-btns" },
       h("button", { class:"btn btn-ghost", onclick:() => m.remove() }, t("cancel")),
       h("button", { class:"btn btn-primary", onclick: async () => {
         if (!name.value.trim()) return msg.textContent = t("errName");
-        const upd = { display_name: name.value.trim(), bio: bio.value.trim() };
+        const upd = { display_name: name.value.trim(), bio: bio.value.trim(), location: loc.value || null };
         const { error } = await sb.from("profiles").update(upd).eq("id", me.id);
         if (error) return msg.textContent = friendly(error);
         Object.assign(myProfile, upd); m.remove(); route();
