@@ -206,6 +206,24 @@
   .reply.best{background:#F0FAF3;border-radius:12px;padding-left:8px;padding-right:8px;border-bottom-color:transparent}
   .best-tag{font-size:12px;font-weight:700;color:#1E7A45;background:#DDF4E6;border-radius:999px;padding:2px 8px}
   .hw-hello{background:linear-gradient(160deg,#E6EEFB,var(--mint))}
+  .free-card{display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:18px;text-decoration:none;color:inherit}
+  .free-card .ic{flex:none;width:44px;height:44px;border-radius:12px;background:var(--peach);display:grid;place-items:center;font-size:22px}
+  .free-card .txt{flex:1;min-width:0}
+  .free-card b{display:block;font-size:16px}
+  .free-card span{color:var(--muted);font-size:14px}
+  .free-card .go{flex:none;color:var(--green);font-weight:600;font-size:14px}
+  .res{display:flex;gap:12px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px}
+  .res .ic{flex:none;width:40px;height:40px;border-radius:12px;background:var(--mint);display:grid;place-items:center;font-size:20px}
+  .res .txt{flex:1;min-width:0}
+  .res b{display:block}
+  .res p{margin:2px 0 8px;color:var(--muted);font-size:14px}
+  .grade-chip{display:inline-block;background:var(--mint);color:var(--green);border-radius:999px;padding:1px 9px;font-size:12px;font-weight:600;margin-left:6px;vertical-align:middle}
+  .auth-free{display:flex;gap:10px;align-items:center;background:rgba(255,255,255,.75);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-top:14px;font-size:14px}
+  .auth-free .txt{flex:1;min-width:0}
+  .auth-free{flex-wrap:wrap}
+  .auth-free .txt{flex:1 1 180px}
+  @media (max-width:520px){.auth-free .btn{width:100%}}
+  a.btn{text-decoration:none}
   .agree{font-size:13px;color:var(--muted);margin:8px 0 0}
   .prof-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
   .blocked-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
@@ -247,6 +265,7 @@
       </div>
       <h1 data-i18n-html="heroTitle"></h1>
       <p data-i18n="heroText"></p>
+      <div id="authFree"></div>
       <div id="authInstall" style="margin-top:16px"></div>
     </div>
   </div>
@@ -316,6 +335,22 @@
    ===================================================================== */
 const SUPABASE_URL = "https://tncpurfrvpysvwrairbf.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_lfdgp3cPdkqqGrnM2zncQA_LbGSXWUK";
+
+/* ---------- Free math resources (files live in the "free" folder) ----------
+   To add one: upload the PDF into free/ on GitHub, then add a line below.
+   FANGMATH_URL: your Prof. Fang Math website. Leave "" to hide that button. */
+const FANGMATH_URL = "";
+const FREE_MATH = [
+  { file:"free/multiply-divide-notes.pdf",      grade:"3–4", icon:"📘",
+    en:["Class Notes: Multiplying & Long Division", "4 ways to multiply a 3-digit number by a 1-digit number, plus 2-digit ÷ 1-digit long division, with worked examples."],
+    zh:["课堂笔记：乘法与长除法", "三位数乘一位数的 4 种方法，以及两位数除以一位数的长除法，每种都有例题。"] },
+  { file:"free/multiply-divide-worksheet.pdf",  grade:"3–4", icon:"✏️",
+    en:["Practice Worksheet", "Printable practice for the same skills, from easy to challenge."],
+    zh:["练习卷", "配套练习，可打印，由易到难。"] },
+  { file:"free/multiply-divide-answer-key.pdf", grade:"3–4", icon:"✅",
+    en:["Answer Key", "Step-by-step answers so you can check your child's work."],
+    zh:["答案", "分步答案，方便家长检查孩子的作业。"] },
+];
 
 /* =====================================================================
    2) TEXT — English / 中文
@@ -394,6 +429,10 @@ const TEXT = {
     notifIosTitle:"First add the app to your Home Screen", notifIosText:"On iPhone, notifications only work in the app on your Home Screen. Add it (3 quick taps), open PMA from the Home Screen, then turn on notifications in Profile → Settings.", showMeHow:"Show me how",
     notifDeniedTitle:"Notifications are blocked", notifDeniedIos:"Open your iPhone Settings → Notifications → PMA, and turn on “Allow Notifications”.", notifDeniedOther:"Tap the lock or ⓘ icon next to the web address (or open your phone's Settings → Apps → your browser) and allow notifications for parentsmeetai.org.",
     notifNo:"This browser can't show notifications. Try Chrome, or the app on your Home Screen.",
+    freeTitle:"Free Math Resources", freeCardText:"Printable notes & worksheets from a K–12 math teacher.", open:"Open",
+    freeIntro:"Printable class notes, worksheets and answer keys from Prof. Fang Math, a K–12 math educator. Free for PMA parents — print them or share them with your child.",
+    gradeLbl:"Grade", downloadPdf:"⬇ Download PDF", moreFrom:"More from Prof. Fang Math", moreText:"More practice, lessons and challenges for Grades K–12.", visitSite:"Visit website →",
+    authFreeText:"Sign up free and get printable math notes & worksheets.", seeFree:"See what's included", signupFree:"Sign up free",
   },
   zh:{
     langBtn:"EN", langName:"中文",
@@ -468,6 +507,10 @@ const TEXT = {
     notifIosTitle:"请先把 App 加到主屏幕", notifIosText:"iPhone 只有从主屏幕打开的 App 才能收到通知。先把它加到主屏幕（点 3 下），再从主屏幕打开 PMA，然后到「我的 → 设置」开启通知。", showMeHow:"教我怎么加",
     notifDeniedTitle:"通知被禁止了", notifDeniedIos:"打开 iPhone 的「设置 → 通知 → PMA」，打开「允许通知」。", notifDeniedOther:"点网址旁边的锁 🔒 或 ⓘ 图标（或打开手机「设置 → 应用 → 浏览器」），允许 parentsmeetai.org 发送通知。",
     notifNo:"这个浏览器不支持通知。请用 Chrome，或从主屏幕上的 App 打开。",
+    freeTitle:"免费数学资料", freeCardText:"K–12 数学老师整理的笔记和练习卷，可打印。", open:"打开",
+    freeIntro:"来自 Prof. Fang Math（K–12 数学老师）的课堂笔记、练习卷和答案。PMA 家长免费使用，可以打印，也可以分享给孩子。",
+    gradeLbl:"年级", downloadPdf:"⬇ 下载 PDF", moreFrom:"更多 Prof. Fang Math 资料", moreText:"K–12 各年级的更多练习、课程和挑战题。", visitSite:"访问网站 →",
+    authFreeText:"免费注册，即可下载可打印的数学笔记和练习卷。", seeFree:"看看有哪些", signupFree:"免费注册",
   }
 };
 
@@ -709,6 +752,7 @@ async function route(){
       case "post":      setTab("community"); return await pagePost(view, parseInt(parts[1], 10));
       case "homework":  setTab("homework"); return await pageHomework(view);
       case "ask":       setTab("homework"); return pageAsk(view);
+      case "free":      setTab("home"); return pageFree(view);
       case "messages":  setTab("messages"); return parts[1] ? await pageThread(view, parts[1]) : await pageMessages(view);
       case "profile":   setTab("profile"); return await pageProfile(view, me.id);
       case "u":         setTab(parts[1] === me.id ? "profile" : "community"); return await pageProfile(view, parts[1]);
@@ -781,6 +825,7 @@ async function pageHome(view){
     h("h1", {}, "Parents Meet ", h("span", {}, "AI")),
     h("p", {}, t("subtitle")),
     h("button", { class:"btn btn-primary btn-big btn-block", onclick:() => location.hash = "#/new" }, "✏️  " + t("startDiscussion"))));
+  view.append(freeCard());
   view.append(h("div", { class:"muted", style:"font-size:14px;margin-bottom:8px" }, t("ideasTitle")));
   view.append(h("div", { class:"ideas" }, t("ideas").map(q => h("button", { class:"idea", onclick:() => location.hash = "#/new/" + encodeURIComponent(q) }, q))));
   view.append(h("div", { class:"section-title" }, h("h3", {}, t("recent")), h("a", { href:"#/community", class:"link" }, t("seeAll"))));
@@ -856,6 +901,7 @@ async function pageHomework(view){
     h("h1", { style:"font-size:26px" }, "📚 " + t("hwTitle")),
     h("p", {}, t("hwSubtitle")),
     h("button", { class:"btn btn-primary btn-big btn-block", onclick:() => location.hash = "#/ask" }, "✋ " + t("askHw"))));
+  view.append(freeCard());
   const gSel = gradeSelect(hwGrade, true), sSel = subjectSelect(hwSubject, true);
   const segAll = h("button", {}, t("all")), segOpen = h("button", {}, t("needsHelp")), segDone = h("button", {}, t("solved"));
   const list = h("div");
@@ -1629,7 +1675,43 @@ function pushSettingsRow(){
 if ("serviceWorker" in navigator) navigator.serviceWorker.addEventListener("message", e => {
   if (e.data && e.data.go) { try { const u = new URL(e.data.go, location.href); if (u.hash) location.hash = u.hash; } catch (x) {} }
 });
+/* ---------- free math resources ---------- */
+function freeCard(){
+  return h("a", { class:"free-card", href:"#/free" },
+    h("div", { class:"ic", "aria-hidden":"true" }, "📐"),
+    h("div", { class:"txt" }, h("b", {}, t("freeTitle")), h("span", {}, t("freeCardText"))),
+    h("span", { class:"go" }, t("open") + " ›"));
+}
+function freeItem(r, withLink){
+  const [title, desc] = r[lang === "zh" ? "zh" : "en"];
+  return h("div", { class:"res" },
+    h("div", { class:"ic", "aria-hidden":"true" }, r.icon),
+    h("div", { class:"txt" },
+      h("b", {}, title, h("span", { class:"grade-chip" }, (lang === "zh" ? r.grade + " " + t("gradeLbl") : t("gradeLbl") + " " + r.grade))),
+      h("p", {}, desc),
+      withLink ? h("a", { class:"btn btn-primary", href:r.file, target:"_blank", rel:"noopener" }, t("downloadPdf")) : null));
+}
+function pageFree(view){
+  setTop(t("freeTitle"), "#/home");
+  view.append(h("p", { class:"muted", style:"margin:4px 0 16px" }, t("freeIntro")));
+  FREE_MATH.forEach(r => view.append(freeItem(r, true)));
+  if (FANGMATH_URL) view.append(h("div", { class:"hello", style:"margin-top:18px" },
+    h("h1", { style:"font-size:22px" }, t("moreFrom")), h("p", {}, t("moreText")),
+    h("a", { class:"btn btn-primary btn-block", href:FANGMATH_URL, target:"_blank", rel:"noopener" }, t("visitSite"))));
+}
+function showFreePreview(){
+  const m = modal([h("h3", {}, "📐 " + t("freeTitle")), h("div", { style:"margin-top:10px" }, FREE_MATH.map(r => freeItem(r, false))),
+    h("div", { class:"row-btns" }, h("button", { class:"btn btn-ghost", onclick:() => m.remove() }, t("close")),
+      h("button", { class:"btn btn-primary", onclick:() => { m.remove(); setAuthMode("signup"); $("authForms").scrollIntoView({ behavior:"smooth" }); } }, t("signupFree")))]);
+}
+function renderAuthFree(){
+  const slot = $("authFree"); if (!slot) return;
+  slot.replaceChildren(h("div", { class:"auth-free" }, h("span", { style:"font-size:22px" }, "🎁"),
+    h("div", { class:"txt" }, t("authFreeText")),
+    h("button", { class:"btn btn-ghost", style:"padding:8px 12px", onclick:showFreePreview }, t("seeFree"))));
+}
 function renderAuthInstall(){
+  renderAuthFree();
   const slot = $("authInstall"); if (slot) { slot.replaceChildren(); const b = installBanner(); if (b) slot.append(b); }
   const g = $("authGetApp"); if (g) { g.replaceChildren(); const btn = getAppButton(); if (btn) g.append(btn); }
 }
