@@ -388,6 +388,12 @@ const TEXT = {
     iosTitle:"3 taps to add the app", iosNote:"Apple doesn't allow one-tap installs from websites, so iPhone needs these 3 quick taps.", iosSteps:["Tap the ··· button at the bottom-right of the screen (or the Share button ⬆️).","Tap “Share”, then tap “Add to Home Screen” (scroll down if you don't see it).","Tap “Add”. Done! 🎉"],
     androidTitle:"Add to your Android phone", androidSteps:["Tap the ⋮ menu in the top-right corner of Chrome.","Tap “Install app” or “Add to Home screen”.","Tap “Install” to confirm."],
     desktopTitle:"Install on your phone", desktopText:"Open parentsmeetai.org on your phone, then follow these steps:", gotIt:"Got it",
+    notif:"Notifications", notifOn:"On", notifOff:"Off", notifBlockedLbl:"Blocked",
+    notifOnToast:"Notifications are on 🔔", notifOffToast:"Notifications are off.", notifFail:"Couldn't turn on notifications. Please try again.",
+    notifPromptTitle:"Get notified", notifPromptText:"Know right away when a parent replies or messages you.", turnOn:"Turn on",
+    notifIosTitle:"First add the app to your Home Screen", notifIosText:"On iPhone, notifications only work in the app on your Home Screen. Add it (3 quick taps), open PMA from the Home Screen, then turn on notifications in Profile → Settings.", showMeHow:"Show me how",
+    notifDeniedTitle:"Notifications are blocked", notifDeniedIos:"Open your iPhone Settings → Notifications → PMA, and turn on “Allow Notifications”.", notifDeniedOther:"Tap the lock or ⓘ icon next to the web address (or open your phone's Settings → Apps → your browser) and allow notifications for parentsmeetai.org.",
+    notifNo:"This browser can't show notifications. Try Chrome, or the app on your Home Screen.",
   },
   zh:{
     langBtn:"EN", langName:"中文",
@@ -456,6 +462,12 @@ const TEXT = {
     iosTitle:"3 步把 App 加到手机", iosNote:"苹果不允许网页一键安装，所以 iPhone 需要点这 3 下。", iosSteps:["点屏幕右下角的 ··· 按钮（或「分享」按钮 ⬆️）。","点「分享」，再点「添加到主屏幕」（看不到就往下滑）。","点「添加」，完成！🎉"],
     androidTitle:"添加到安卓手机", androidSteps:["点 Chrome 右上角的 ⋮ 菜单。","点「安装应用」或「添加到主屏幕」。","点「安装」确认。"],
     desktopTitle:"安装到手机", desktopText:"请在手机上打开 parentsmeetai.org，然后按下面的步骤操作：", gotIt:"知道了",
+    notif:"消息通知", notifOn:"已开启", notifOff:"已关闭", notifBlockedLbl:"已被禁止",
+    notifOnToast:"通知已开启 🔔", notifOffToast:"通知已关闭。", notifFail:"通知没有开启成功，请再试一次。",
+    notifPromptTitle:"开启消息通知", notifPromptText:"有家长回复你或给你发私信时，马上就能知道。", turnOn:"开启",
+    notifIosTitle:"请先把 App 加到主屏幕", notifIosText:"iPhone 只有从主屏幕打开的 App 才能收到通知。先把它加到主屏幕（点 3 下），再从主屏幕打开 PMA，然后到「我的 → 设置」开启通知。", showMeHow:"教我怎么加",
+    notifDeniedTitle:"通知被禁止了", notifDeniedIos:"打开 iPhone 的「设置 → 通知 → PMA」，打开「允许通知」。", notifDeniedOther:"点网址旁边的锁 🔒 或 ⓘ 图标（或打开手机「设置 → 应用 → 浏览器」），允许 parentsmeetai.org 发送通知。",
+    notifNo:"这个浏览器不支持通知。请用 Chrome，或从主屏幕上的 App 打开。",
   }
 };
 
@@ -583,6 +595,7 @@ function applyStaticText(){
 function setLang(l){
   lang = l; try { localStorage.setItem("pmai-lang", l); } catch(e) {}
   applyStaticText();
+  if (me && sb) syncPush();
   if (!$("app").classList.contains("hidden")) route();
 }
 document.querySelectorAll("[data-lang-toggle]").forEach(b => b.addEventListener("click", () => setLang(lang === "en" ? "zh" : "en")));
@@ -666,6 +679,7 @@ async function boot(){
   await loadBlocks();
   show("app");
   watchUnread();
+  syncPush();
   if (!location.hash || location.hash === "#") location.hash = "#/home"; else route();
 }
 
@@ -762,7 +776,7 @@ async function renderPostList(container, query){
 /* ---------- HOME ---------- */
 async function pageHome(view){
   setTop(null);
-  const ib = installBanner(); if (ib) view.append(ib);
+  const ib = installBanner(); if (ib) view.append(ib); else { const pp = pushPrompt(); if (pp) view.append(pp); }
   view.append(h("div", { class:"hello" },
     h("h1", {}, "Parents Meet ", h("span", {}, "AI")),
     h("p", {}, t("subtitle")),
@@ -1133,6 +1147,7 @@ function watchUnread(){
 }
 async function pageMessages(view){
   setTop(t("messagesTitle"));
+  const pp = pushPrompt(); if (pp) view.append(pp);
   const { data: convs, error } = await sb.from("conversations")
     .select("id,user_a,user_b,last_message_at,a:profiles!conversations_user_a_fkey(" + PROFILE_FIELDS + "),b:profiles!conversations_user_b_fkey(" + PROFILE_FIELDS + ")")
     .order("last_message_at", { ascending:false }).limit(100);
@@ -1289,12 +1304,13 @@ async function pageProfile(view, userId){
     view.append(h("div", { class:"card settings", style:"padding:4px 14px" },
       h("button", { class:"row", onclick:() => setLang(lang === "en" ? "zh" : "en") }, h("span", {}, t("language")), h("span", {}, t("langName") + " ⇄ " + t("langBtn"))),
       !isStandalone() ? h("button", { class:"row", onclick:doInstall }, h("span", {}, t("installRow")), h("span", {}, "›")) : null,
+      pushSettingsRow(),
       h("button", { class:"row", onclick:changePassword }, h("span", {}, t("changePassword")), h("span", {}, "›")),
       myProfile.is_admin ? h("button", { class:"row", onclick:showReports }, h("span", {}, "🛡️ " + t("adminReports")), h("span", {}, "›")) : null,
       h("button", { class:"row", onclick:showBlocked }, h("span", {}, "🚫 " + t("blockedUsers")), h("span", {}, "›")),
       h("a", { class:"row", href:"privacy.html" }, h("span", {}, t("privacy")), h("span", {}, "›")),
       h("a", { class:"row", href:"terms.html" }, h("span", {}, t("terms")), h("span", {}, "›")),
-      h("button", { class:"row", onclick:async () => { await sb.auth.signOut(); } }, h("span", {}, t("logout")), h("span", {}, "")),
+      h("button", { class:"row", onclick:async () => { await forgetPushDevice(); await sb.auth.signOut(); } }, h("span", {}, t("logout")), h("span", {}, "")),
       h("button", { class:"row", style:"color:var(--red)", onclick:deleteAccount }, h("span", {}, "🗑️ " + t("deleteAccount")), h("span", {}, "›"))));
   }
 }
@@ -1512,6 +1528,107 @@ function installBanner(){
     h("button", { class:"x", "aria-label":t("close"), onclick:() => { try { localStorage.setItem("pmai-install-hide", "1"); } catch(e) {} el.remove(); } }, "×"));
   return el;
 }
+/* ---------- push notifications ---------- */
+const PUSH_FN = SUPABASE_URL.replace(/\/$/, "") + "/functions/v1/send-push";
+function pushSupport(){
+  const has = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+  if (isIOS() && !isStandalone()) return "needInstall";        // iPhone: only the Home Screen app can get notifications
+  return has ? "ok" : "no";
+}
+async function swReady(){
+  if (!("serviceWorker" in navigator)) return null;
+  return Promise.race([navigator.serviceWorker.ready, new Promise(r => setTimeout(() => r(null), 6000))]);
+}
+async function currentPushSub(){
+  try { const reg = await swReady(); return reg ? await reg.pushManager.getSubscription() : null; } catch (e) { return null; }
+}
+async function pushIsOn(){
+  if (pushSupport() !== "ok" || Notification.permission !== "granted") return false;
+  return !!(await currentPushSub());
+}
+function b64uToBytes(s){ s = s.replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "="; return Uint8Array.from(atob(s), c => c.charCodeAt(0)); }
+async function savePushSub(sub){
+  const j = sub.toJSON();
+  const { error } = await sb.rpc("save_push_subscription", { p_endpoint: j.endpoint, p_p256dh: j.keys.p256dh, p_auth: j.keys.auth, p_lang: lang });
+  if (error) throw error;
+}
+async function enablePush(){
+  const sup = pushSupport();
+  if (sup === "needInstall") return pushIosHelp();
+  if (sup !== "ok") return toast(t("notifNo"));
+  let perm = Notification.permission;
+  if (perm === "default") perm = await Notification.requestPermission();   // must be the first thing after the tap (iPhone)
+  if (perm !== "granted") return pushDeniedHelp();
+  try {
+    const reg = await swReady(); if (!reg) throw new Error("no service worker");
+    const r = await fetch(PUSH_FN, { method:"POST", headers:{ "Content-Type":"application/json", apikey: SUPABASE_ANON_KEY }, body: JSON.stringify({ type:"key" }) });
+    const { publicKey } = await r.json(); if (!publicKey) throw new Error("no key");
+    let sub = await reg.pushManager.getSubscription();
+    if (sub) {
+      const old = sub.options && sub.options.applicationServerKey ? btoa(String.fromCharCode(...new Uint8Array(sub.options.applicationServerKey))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "") : publicKey;
+      if (old !== publicKey) { await sub.unsubscribe(); sub = null; }
+    }
+    if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64uToBytes(publicKey) });
+    await savePushSub(sub);
+    try { localStorage.setItem("pmai-push-hide", "1"); } catch (e) {}
+    document.querySelectorAll(".push-prompt").forEach(x => x.remove());
+    toast(t("notifOnToast")); return true;
+  } catch (e) { console.warn(e); toast(t("notifFail")); return false; }
+}
+async function disablePush(){
+  const sub = await currentPushSub();
+  if (sub) { try { await sb.rpc("remove_push_subscription", { p_endpoint: sub.endpoint }); } catch (e) {} try { await sub.unsubscribe(); } catch (e) {} }
+  toast(t("notifOffToast"));
+}
+async function syncPush(){            // after sign-in / language change: make sure this phone is linked to the right parent
+  try { if (await pushIsOn()) await savePushSub(await currentPushSub()); } catch (e) {}
+}
+async function forgetPushDevice(){    // before log out: stop notifications for this parent on this phone
+  try { const sub = await currentPushSub(); if (sub) await sb.rpc("remove_push_subscription", { p_endpoint: sub.endpoint }); } catch (e) {}
+}
+function pushIosHelp(){
+  const m = modal([h("h3", {}, "🔔 " + t("notifIosTitle")), h("p", { style:"margin:8px 0 0" }, t("notifIosText")),
+    h("div", { class:"row-btns" }, h("button", { class:"btn btn-ghost", onclick:() => m.remove() }, t("close")),
+      h("button", { class:"btn btn-primary", onclick:() => { m.remove(); showInstallHelp(); } }, t("showMeHow")))]);
+}
+function pushDeniedHelp(){
+  const m = modal([h("h3", {}, t("notifDeniedTitle")), h("p", { style:"margin:8px 0 0" }, isIOS() ? t("notifDeniedIos") : t("notifDeniedOther")),
+    h("div", { class:"row-btns" }, h("button", { class:"btn btn-primary", onclick:() => m.remove() }, t("gotIt")))]);
+}
+function pushPromptDismissed(){ try { return localStorage.getItem("pmai-push-hide") === "1"; } catch (e) { return false; } }
+function pushPrompt(){
+  if (pushSupport() !== "ok" || Notification.permission !== "default" || pushPromptDismissed()) return null;
+  const el = h("div", { class:"install push-prompt", role:"region", "aria-label":t("notifPromptTitle") },
+    h("div", { class:"ic", "aria-hidden":"true" }, "🔔"),
+    h("div", { class:"txt" }, h("b", {}, t("notifPromptTitle")), t("notifPromptText")),
+    h("button", { class:"btn btn-primary", onclick:enablePush }, t("turnOn")),
+    h("button", { class:"x", "aria-label":t("close"), onclick:() => { try { localStorage.setItem("pmai-push-hide", "1"); } catch(e) {} el.remove(); } }, "×"));
+  return el;
+}
+function pushSettingsRow(){
+  const right = h("span", {}, "…");
+  const row = h("button", { class:"row" }, h("span", {}, "🔔 " + t("notif")), right);
+  const refresh = async () => {
+    const sup = pushSupport();
+    if (sup === "needInstall" || sup === "no") { right.textContent = t("notifOff") + " ›"; return; }
+    if (Notification.permission === "denied") { right.textContent = t("notifBlockedLbl"); return; }
+    right.textContent = (await pushIsOn()) ? "✅ " + t("notifOn") : t("notifOff") + " ›";
+  };
+  row.onclick = async () => {
+    const sup = pushSupport();
+    if (sup === "needInstall") return pushIosHelp();
+    if (sup === "no") return toast(t("notifNo"));
+    if (Notification.permission === "denied") return pushDeniedHelp();
+    row.disabled = true;
+    if (await pushIsOn()) await disablePush(); else await enablePush();
+    row.disabled = false; refresh();
+  };
+  refresh();
+  return row;
+}
+if ("serviceWorker" in navigator) navigator.serviceWorker.addEventListener("message", e => {
+  if (e.data && e.data.go) { try { const u = new URL(e.data.go, location.href); if (u.hash) location.hash = u.hash; } catch (x) {} }
+});
 function renderAuthInstall(){
   const slot = $("authInstall"); if (slot) { slot.replaceChildren(); const b = installBanner(); if (b) slot.append(b); }
   const g = $("authGetApp"); if (g) { g.replaceChildren(); const btn = getAppButton(); if (btn) g.append(btn); }
