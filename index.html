@@ -206,6 +206,11 @@
   .reply.best{background:#F0FAF3;border-radius:12px;padding-left:8px;padding-right:8px;border-bottom-color:transparent}
   .best-tag{font-size:12px;font-weight:700;color:#1E7A45;background:#DDF4E6;border-radius:999px;padding:2px 8px}
   .hw-hello{background:linear-gradient(160deg,#E6EEFB,var(--mint))}
+  .agree{font-size:13px;color:var(--muted);margin:8px 0 0}
+  .prof-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+  .blocked-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .blocked-row .btn{padding:7px 12px;font-size:14px}
+  .settings a.row{display:flex;justify-content:space-between;align-items:center;width:100%;border-bottom:1px solid var(--line);padding:14px 4px;font-size:15px;color:inherit;text-decoration:none}
   .install{display:flex;align-items:center;gap:12px;background:var(--mint);border:1px solid #C9D8FF;border-radius:16px;padding:12px 14px;margin-bottom:14px}
   .install .ic{width:40px;height:40px;border-radius:10px;background:var(--green);color:#fff;display:grid;place-items:center;font-family:Fraunces,serif;font-size:19px;flex:none}
   .install .txt{flex:1;min-width:0;font-size:14px;line-height:1.35}
@@ -262,6 +267,7 @@
         <label class="field" for="password" data-i18n="password"></label>
         <input id="password" type="password" autocomplete="current-password">
         <label id="ageWrap" class="check hidden"><input id="age" type="checkbox"><span data-i18n="ageCheck"></span></label>
+        <p id="agreeNote" class="agree hidden"><span data-i18n="agreePre"></span> <a href="terms.html" data-i18n="terms"></a> <span data-i18n="and"></span> <a href="privacy.html" data-i18n="privacy"></a>.</p>
         <div id="authMsg" class="err" aria-live="polite"></div>
         <button id="authBtn" class="btn btn-primary btn-block" style="margin-top:6px" type="submit"></button>
       </form>
@@ -285,7 +291,8 @@
       <button class="btn btn-primary btn-block" style="margin-top:6px" type="submit" data-i18n="save"></button>
     </form>
   </div>
-  <p class="wrap muted" style="font-size:13px;text-align:center;padding-bottom:24px" data-i18n="heroFoot"></p>
+  <p class="wrap muted" style="font-size:13px;text-align:center;padding-bottom:6px" data-i18n="heroFoot"></p>
+  <p class="wrap muted" style="font-size:13px;text-align:center;padding-bottom:24px"><a href="privacy.html" data-i18n="privacy"></a> · <a href="terms.html" data-i18n="terms"></a></p>
 </section>
 
 <!-- ================= APP ================= -->
@@ -336,6 +343,15 @@ const TEXT = {
     markSolved:"Mark as solved", reopen:"Reopen", markBest:"Best answer", bestAnswer:"Best answer",
     askerTip:"Got your answer? Tap ⭐ on the most helpful reply.", solvedNote:"Marked as solved. Thank you!",
     thanksBest:"Marked as best answer — thank you!",
+    block:"Block", unblock:"Unblock", blockTitle:"Block {name}?",
+    blockText:"You won't see their posts, replies or messages, and they won't be able to message you. They won't be told. You can unblock anytime in Profile → Settings.",
+    blockedToast:"Blocked.", unblockedToast:"Unblocked.", blockedUsers:"Blocked users", noBlocked:"You haven't blocked anyone.",
+    youBlocked:"You blocked this parent.", hiddenBlocked:"This post is from someone you blocked.",
+    cantMessage:"You can't message this parent.", privacy:"Privacy Policy", terms:"Terms of Use",
+    agreePre:"By signing up you agree to the", and:"and",
+    deleteAccount:"Delete account", deleteForever:"Delete forever",
+    deleteText:"This permanently deletes your account, profile, photos, posts, replies, likes and messages. This cannot be undone.",
+    typeDelete:"Type DELETE to confirm", typeDeleteErr:"Please type DELETE to confirm.", accountDeleted:"Your account has been deleted.",
     appTitle:"Parents Meet AI", subtitle:"Parents learning about AI together.", startDiscussion:"Start a Discussion",
     ideasTitle:"Not sure what to ask? Try one:", recent:"Recent discussions", popular:"Popular", recentTab:"Recent", seeAll:"See all",
     ideas:["How are parents using ChatGPT with their children?","Should children use AI for homework?","What AI tools are useful for elementary school students?","How much AI should children use?","How can parents teach children to use AI responsibly?","What do other parents think about AI in education?"],
@@ -395,6 +411,15 @@ const TEXT = {
     markSolved:"标记为已解决", reopen:"重新打开", markBest:"最佳回答", bestAnswer:"最佳回答",
     askerTip:"问题解决了？在最有帮助的回答上点 ⭐。", solvedNote:"已标记为解决，谢谢！",
     thanksBest:"已设为最佳回答，谢谢！",
+    block:"屏蔽", unblock:"取消屏蔽", blockTitle:"屏蔽 {name}？",
+    blockText:"你将看不到对方的帖子、回复和私信，对方也无法给你发私信。对方不会收到通知。你可以随时在「我的 → 设置」中取消屏蔽。",
+    blockedToast:"已屏蔽。", unblockedToast:"已取消屏蔽。", blockedUsers:"已屏蔽的用户", noBlocked:"你还没有屏蔽任何人。",
+    youBlocked:"你已屏蔽这位家长。", hiddenBlocked:"这是你屏蔽的用户发的帖子。",
+    cantMessage:"无法给这位家长发私信。", privacy:"隐私政策", terms:"使用条款",
+    agreePre:"注册即表示你同意", and:"和",
+    deleteAccount:"删除账号", deleteForever:"永久删除",
+    deleteText:"这会永久删除你的账号、资料、照片、帖子、回复、点赞和私信，无法恢复。",
+    typeDelete:"输入 DELETE 确认", typeDeleteErr:"请输入 DELETE 确认。", accountDeleted:"你的账号已删除。",
     appTitle:"Parents Meet AI", subtitle:"家长一起学习 AI。", startDiscussion:"发起讨论",
     ideasTitle:"不知道问什么？试试这些：", recent:"最新讨论", popular:"热门", recentTab:"最新", seeAll:"查看全部",
     ideas:["家长们是怎么和孩子一起用 ChatGPT 的？","孩子应该用 AI 写作业吗？","哪些 AI 工具适合小学生？","孩子用 AI 用多少比较合适？","家长怎样教孩子负责任地使用 AI？","其他家长怎么看 AI 在教育中的作用？"],
@@ -444,6 +469,7 @@ if (!TEXT[lang]) lang = "en";
 const t = k => TEXT[lang][k];
 
 let sb = null, me = null, myProfile = null;
+let blocked = new Set();   // parents I have blocked
 let subs = [];          // realtime channels for the current page
 let dmSub = null;       // realtime channel for unread badge
 let authMode = "login";
@@ -526,6 +552,7 @@ function friendly(err){
   if (m.includes("invalid login")) return t("badLogin");
   if (m.includes("not confirmed")) return t("notConfirmed");
   if (m.includes("already registered") || m.includes("already been registered")) return t("alreadyUser");
+  if (m.includes("blocked") || (m.includes("row-level security") && m.includes("dm_messages"))) return t("cantMessage");
   return (err && err.message) || String(err);
 }
 function show(id){ ["loading","setup","auth","app"].forEach(x => $(x).classList.toggle("hidden", x !== id)); }
@@ -569,6 +596,7 @@ function setAuthMode(m){
   $("tabSignup").classList.toggle("active", m === "signup");
   $("nameWrap").classList.toggle("hidden", m !== "signup");
   $("ageWrap").classList.toggle("hidden", m !== "signup");
+  $("agreeNote").classList.toggle("hidden", m !== "signup");
   $("password").autocomplete = m === "signup" ? "new-password" : "current-password";
   $("authBtn").textContent = m === "signup" ? t("signup") : t("login");
   $("authMsg").textContent = "";
@@ -625,12 +653,17 @@ $("newPwForm").addEventListener("submit", async e => {
   setTimeout(() => { $("newPwForm").classList.add("hidden"); $("authForms").classList.remove("hidden"); boot(); }, 900);
 });
 
+async function loadBlocks(){
+  const { data } = await sb.from("blocks").select("blocked_id").eq("blocker_id", me.id);
+  blocked = new Set((data || []).map(r => r.blocked_id));
+}
 async function boot(){
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { show("auth"); return; }
   me = session.user;
   const { data: prof } = await sb.from("profiles").select("id,display_name,bio,avatar_url,location,is_admin,created_at").eq("id", me.id).maybeSingle();
   myProfile = prof || { id: me.id, display_name: (me.user_metadata || {}).display_name || "Parent", bio:"", avatar_url:null, is_admin:false, created_at:new Date().toISOString() };
+  await loadBlocks();
   show("app");
   watchUnread();
   if (!location.hash || location.hash === "#") location.hash = "#/home"; else route();
@@ -722,7 +755,7 @@ async function renderPostList(container, query){
   const { data, error } = await query;
   if (error) throw error;
   const liked = await likedPostIds((data || []).map(p => p.id));
-  (data || []).forEach(p => container.append(postCard(p, liked.has(p.id))));
+  (data || []).filter(p => !blocked.has(p.author_id)).forEach(p => container.append(postCard(p, liked.has(p.id))));
   return data || [];
 }
 
@@ -972,6 +1005,7 @@ async function pagePost(view, id){
   const { data: p, error } = await sb.from("posts").select(POST_FIELDS).eq("id", id).maybeSingle();
   if (error) throw error;
   if (!p) return view.append(h("div", { class:"empty" }, h("div", { class:"big" }, "🍃"), t("notFound")));
+  if (blocked.has(p.author_id)) return view.append(h("div", { class:"empty" }, h("div", { class:"big" }, "🚫"), t("hiddenBlocked")));
   const liked = await likedPostIds([p.id]);
   const isHw = p.kind === "homework", asker = p.author_id === me.id;
   if (isHw) { setTop(t("hwTitle"), "#/homework"); setTab("homework"); }
@@ -1026,7 +1060,7 @@ async function pagePost(view, id){
     });
   }
   function addReply(r, isLiked){
-    if (shown.has(r.id)) return; shown.add(r.id);
+    if (shown.has(r.id) || blocked.has(r.author_id)) return; shown.add(r.id);
     const author = r.author || { id:r.author_id, display_name:"Parent" };
     const bestBtn = (isHw && asker && r.author_id !== me.id) ? h("button", { class:"mini best-btn", onclick: async () => {
       const { error } = await sb.rpc("set_solved", { p_post:p.id, p_solved:true, p_best:r.id });
@@ -1083,7 +1117,9 @@ async function pagePost(view, id){
    MESSAGES
    ===================================================================== */
 async function refreshUnread(){
-  const { count } = await sb.from("dm_messages").select("id", { count:"exact", head:true }).is("read_at", null).neq("sender_id", me.id);
+  if (!me) return;
+  const { data } = await sb.from("dm_messages").select("sender_id").is("read_at", null).neq("sender_id", me.id).limit(200);
+  const count = (data || []).filter(m => !blocked.has(m.sender_id)).length;
   const b = $("unreadBadge");
   b.textContent = count > 9 ? "9+" : String(count || 0);
   b.classList.toggle("hidden", !count);
@@ -1109,7 +1145,7 @@ async function pageMessages(view){
     if (!last.has(m.conversation_id)) last.set(m.conversation_id, m);
     if (m.sender_id !== me.id && !m.read_at) unread.add(m.conversation_id);
   });
-  convs.forEach(c => {
+  convs.filter(c => !blocked.has(c.user_a === me.id ? c.user_b : c.user_a)).forEach(c => {
     const other = c.user_a === me.id ? c.b : c.a;
     const lm = last.get(c.id);
     view.append(h("div", { class:"conv" + (unread.has(c.id) ? " unread" : ""), tabindex:"0", onclick:() => location.hash = "#/messages/" + c.id,
@@ -1138,6 +1174,10 @@ async function pageThread(view, convId){
   setTop(other.display_name, "#/messages");
   const topName = $("topbar").querySelector("h2");
   topName.style.cursor = "pointer"; topName.onclick = () => location.hash = "#/u/" + other.id;
+  if (blocked.has(other.id)) {
+    return view.append(h("div", { class:"empty" }, h("div", { class:"big" }, "🚫"), t("youBlocked"),
+      h("div", { style:"margin-top:12px" }, h("button", { class:"btn btn-ghost", onclick: async () => { await unblockUser(other.id); route(); } }, t("unblock")))));
+  }
 
   const thread = h("div", { class:"thread" }); view.append(thread);
   const shown = new Set(); let lastDay = "";
@@ -1208,7 +1248,12 @@ async function pageProfile(view, userId){
     h("div", { class:"bio" }, p.bio || t("noBio")),
     h("div", { class:"muted", style:"font-size:13px;margin-bottom:14px" }, t("memberSince") + " " + since),
     mine ? h("button", { class:"btn btn-ghost", onclick:editProfile }, "✎ " + t("editProfile"))
-         : h("button", { class:"btn btn-primary", onclick:() => openChatWith(p.id) }, "✉️  " + t("message"))));
+         : blocked.has(p.id)
+           ? h("div", { class:"prof-btns" }, h("button", { class:"btn btn-ghost", onclick: async () => { await unblockUser(p.id); route(); } }, t("unblock")))
+           : h("div", { class:"prof-btns" },
+               h("button", { class:"btn btn-primary", onclick:() => openChatWith(p.id) }, "✉️  " + t("message")),
+               h("button", { class:"btn btn-ghost", onclick:() => confirmBlock(p) }, "🚫 " + t("block")))));
+  if (!mine && blocked.has(p.id)) { view.append(h("div", { class:"empty" }, t("youBlocked"))); return; }
 
   // tabs: discussions / replies
   const segA = h("button", {}, mine ? t("myDiscussions") : t("theirDiscussions"));
@@ -1246,8 +1291,74 @@ async function pageProfile(view, userId){
       !isStandalone() ? h("button", { class:"row", onclick:doInstall }, h("span", {}, t("installRow")), h("span", {}, "›")) : null,
       h("button", { class:"row", onclick:changePassword }, h("span", {}, t("changePassword")), h("span", {}, "›")),
       myProfile.is_admin ? h("button", { class:"row", onclick:showReports }, h("span", {}, "🛡️ " + t("adminReports")), h("span", {}, "›")) : null,
-      h("button", { class:"row", style:"color:var(--red)", onclick:async () => { await sb.auth.signOut(); } }, h("span", {}, t("logout")), h("span", {}, ""))));
+      h("button", { class:"row", onclick:showBlocked }, h("span", {}, "🚫 " + t("blockedUsers")), h("span", {}, "›")),
+      h("a", { class:"row", href:"privacy.html" }, h("span", {}, t("privacy")), h("span", {}, "›")),
+      h("a", { class:"row", href:"terms.html" }, h("span", {}, t("terms")), h("span", {}, "›")),
+      h("button", { class:"row", onclick:async () => { await sb.auth.signOut(); } }, h("span", {}, t("logout")), h("span", {}, "")),
+      h("button", { class:"row", style:"color:var(--red)", onclick:deleteAccount }, h("span", {}, "🗑️ " + t("deleteAccount")), h("span", {}, "›"))));
   }
+}
+function confirmBlock(p){
+  const m = modal([
+    h("h3", {}, t("blockTitle").replace("{name}", p.display_name)),
+    h("p", { class:"muted", style:"margin:6px 0 0" }, t("blockText")),
+    h("div", { class:"row-btns" },
+      h("button", { class:"btn btn-ghost", onclick:() => m.remove() }, t("cancel")),
+      h("button", { class:"btn btn-danger", onclick: async () => {
+        const { error } = await sb.from("blocks").insert({ blocked_id: p.id });
+        if (error && error.code !== "23505") return toast(friendly(error));
+        blocked.add(p.id); m.remove(); toast(t("blockedToast")); refreshUnread(); route();
+      } }, "🚫 " + t("block")))
+  ]);
+}
+async function unblockUser(id){
+  const { error } = await sb.from("blocks").delete().eq("blocker_id", me.id).eq("blocked_id", id);
+  if (error) return toast(friendly(error));
+  blocked.delete(id); toast(t("unblockedToast"));
+}
+async function showBlocked(){
+  const body = h("div", {}, h("p", { class:"muted" }, t("loading")));
+  const m = modal([h("h3", {}, t("blockedUsers")), body, h("div", { class:"row-btns" }, h("button", { class:"btn btn-ghost", onclick:() => m.remove() }, t("close")))]);
+  const ids = [...blocked];
+  if (!ids.length) return body.replaceChildren(h("p", { class:"muted" }, t("noBlocked")));
+  const { data } = await sb.from("profiles").select(PROFILE_FIELDS).in("id", ids);
+  body.replaceChildren();
+  (data || []).forEach(u => {
+    const row = h("div", { class:"blocked-row" }, avatar(u, "s"), h("b", { style:"flex:1" }, u.display_name),
+      h("button", { class:"btn btn-ghost", onclick: async () => { await unblockUser(u.id); row.remove(); if (!blocked.size) body.replaceChildren(h("p", { class:"muted" }, t("noBlocked"))); } }, t("unblock")));
+    body.append(row);
+  });
+}
+function deleteAccount(){
+  const input = h("input", { type:"text", autocomplete:"off", autocapitalize:"characters", placeholder:"DELETE" });
+  const msg = h("div", { class:"err" });
+  const btn = h("button", { class:"btn btn-danger" }, t("deleteForever"));
+  const m = modal([
+    h("h3", { style:"color:var(--red)" }, "🗑️ " + t("deleteAccount")),
+    h("p", { style:"margin:6px 0 10px" }, t("deleteText")),
+    h("label", { class:"field", style:"margin-top:0" }, t("typeDelete")), input, msg,
+    h("div", { class:"row-btns" }, h("button", { class:"btn btn-ghost", onclick:() => m.remove() }, t("cancel")), btn)
+  ]);
+  btn.onclick = async () => {
+    msg.textContent = "";
+    if (input.value.trim().toUpperCase() !== "DELETE") return msg.textContent = t("typeDeleteErr");
+    btn.disabled = true; btn.textContent = t("wait");
+    // remove my photos first (profile photo + homework photos)
+    for (const bucket of ["avatars", "homework"]) {
+      try {
+        const { data: files } = await sb.storage.from(bucket).list(me.id, { limit: 1000 });
+        if (files && files.length) await sb.storage.from(bucket).remove(files.map(f => me.id + "/" + f.name));
+      } catch (e) {}
+    }
+    const { error } = await sb.rpc("delete_my_account");
+    if (error) { btn.disabled = false; btn.textContent = t("deleteForever"); return msg.textContent = friendly(error); }
+    m.remove();
+    try { await sb.auth.signOut({ scope: "local" }); } catch (e) {}
+    me = null; myProfile = null; blocked = new Set(); clearSubs(); setComposer(null);
+    setAuthMode("login"); show("auth"); history.replaceState(null, "", location.pathname);
+    toast(t("accountDeleted"));
+  };
+  input.focus();
 }
 function editProfile(){
   const name = h("input", { type:"text", maxlength:"40", id:"ename" }); name.value = myProfile.display_name;
