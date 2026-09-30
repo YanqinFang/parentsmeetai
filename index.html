@@ -34,7 +34,7 @@
   .wrap{max-width:680px;margin:0 auto;padding:0 16px}
 
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:14px;font-weight:600;border:1px solid transparent;font-size:15px;background:none}
-  .btn-primary{background:linear-gradient(120deg,#2D5BD1,#4B7BEA,#2D5BD1);background-size:200% 100%;color:#fff}
+  .btn-primary{background:var(--green);color:#fff}
   .btn-primary:hover{background:var(--green-dark)}
   .btn-primary:disabled{opacity:.6;cursor:default}
   .btn-ghost{background:var(--surface);border-color:var(--line)}
@@ -51,9 +51,9 @@
   input:focus,textarea:focus{outline:2px solid var(--green);outline-offset:0;border-color:transparent}
   label.field{display:block;font-size:14px;font-weight:600;margin:14px 0 6px}
   .lang{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:14px;font-weight:600}
-  .logo{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#2D5BD1,#5C8AF0);color:#fff;display:grid;place-items:center;font-family:Fraunces,serif;font-size:17px;flex:none}
+  .logo{width:34px;height:34px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;font-family:Fraunces,serif;font-size:17px;flex:none}
   .brand{display:flex;align-items:center;gap:10px;font-family:Fraunces,serif;font-size:19px;font-weight:600}
-  .brand span{background:linear-gradient(90deg,#FF7A59,#FFA98C,#FF7A59);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:flow 5s ease infinite}
+  .brand span{color:var(--orange)}
 
   /* avatars */
   .av{border-radius:50%;flex:none;display:grid;place-items:center;color:#fff;font-weight:600;object-fit:cover;background:#ccc}
@@ -72,21 +72,6 @@
   .auth-hero h1{font-size:clamp(34px,8vw,52px);line-height:1.05;margin:28px 0 10px}
   .auth-hero{position:relative;overflow:hidden}
   .auth-hero h1 em{color:var(--green)}
-  /* ---- sparkle ---- */
-  .btn-big,.getapp,#authBtn{animation:flow 6s ease infinite;box-shadow:0 6px 16px rgba(45,91,209,.28)}
-  .btn-big::after,.getapp::after,#authBtn::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);transform:skewX(-20deg);animation:shine 3.2s ease-in-out infinite;pointer-events:none}
-  .btn-big,#authBtn{position:relative;overflow:hidden}
-  @keyframes shine{0%{left:-60%}55%,100%{left:130%}}
-  @keyframes flow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
-  .spark{position:absolute;pointer-events:none;color:#FF7A59;animation:tw 2.4s ease-in-out infinite}
-  .spark.s1{top:14px;right:18px;font-size:18px}
-  .spark.s2{top:46px;right:52px;font-size:11px;color:#2D5BD1;animation-delay:.8s}
-  .spark.s3{top:18px;right:88px;font-size:12px;animation-delay:1.6s}
-  .auth-hero .spark.s1{top:118px;right:28px;font-size:20px}
-  .auth-hero .spark.s2{top:150px;right:78px}
-  .auth-hero .spark.s3{top:112px;right:122px;font-size:13px}
-  @keyframes tw{0%,100%{opacity:.15;transform:scale(.6) rotate(0)}50%{opacity:1;transform:scale(1.15) rotate(25deg)}}
-  @media (prefers-reduced-motion: reduce){ .btn-big,.getapp,#authBtn,.brand span,.hello h1 span,.spark{animation:none!important} .btn-big::after,.getapp::after,#authBtn::after{display:none} .spark{opacity:.8} }
   .auth-hero p{color:var(--muted);font-size:17px;margin:0}
   .auth-card{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:24px;box-shadow:var(--shadow);margin:-14px auto 30px;max-width:440px;width:calc(100% - 32px)}
   .tabs{display:flex;background:var(--bg);border-radius:12px;padding:4px}
@@ -112,7 +97,7 @@
   /* home */
   .hello{position:relative;overflow:hidden;background:linear-gradient(160deg,var(--mint),var(--peach));border-radius:22px;padding:24px 20px;margin-bottom:18px}
   .hello h1{font-size:32px;line-height:1.1}
-  .hello h1 span{background:linear-gradient(90deg,#FF7A59,#FFA98C,#FF7A59);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:flow 5s ease infinite}
+  .hello h1 span{color:var(--orange)}
   .hello p{margin:6px 0 18px;color:var(--muted);font-size:17px}
   .section-title{display:flex;justify-content:space-between;align-items:baseline;margin:22px 0 10px}
   .section-title h3{font-size:20px}
@@ -197,7 +182,7 @@
   .modal h3{font-size:21px;margin-bottom:4px}
   .row-btns{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
   .toast{position:fixed;left:50%;bottom:calc(var(--navh) + 96px);transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;z-index:70;max-width:90%}
-  .getapp{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:5px;background:linear-gradient(120deg,#2D5BD1,#4B7BEA,#2D5BD1);background-size:200% 100%;color:#fff;border:0;border-radius:999px;padding:7px 13px;font-size:14px;font-weight:600;white-space:nowrap;flex:none;box-shadow:0 2px 8px rgba(45,91,209,.25)}
+  .getapp{display:inline-flex;align-items:center;gap:5px;background:var(--green);color:#fff;border:0;border-radius:999px;padding:7px 13px;font-size:14px;font-weight:600;white-space:nowrap;flex:none;box-shadow:0 2px 8px rgba(45,91,209,.25)}
   .getapp:hover{background:var(--green-dark)}
   .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
   .chip{font-size:12.5px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--bg);border:1px solid var(--line);color:var(--muted)}
@@ -255,7 +240,6 @@
         <div class="brand"><div class="logo">P</div>Parents Meet <span>AI</span></div>
         <div style="display:flex;gap:8px;align-items:center"><span id="authGetApp"></span><button class="lang" data-lang-toggle></button></div>
       </div>
-      <span class="spark s1" aria-hidden="true">✦</span><span class="spark s2" aria-hidden="true">✧</span><span class="spark s3" aria-hidden="true">✦</span>
       <h1 data-i18n-html="heroTitle"></h1>
       <p data-i18n="heroText"></p>
       <div id="authInstall" style="margin-top:16px"></div>
@@ -747,7 +731,6 @@ async function pageHome(view){
   setTop(null);
   const ib = installBanner(); if (ib) view.append(ib);
   view.append(h("div", { class:"hello" },
-    h("span", { class:"spark s1", "aria-hidden":"true" }, "✦"), h("span", { class:"spark s2", "aria-hidden":"true" }, "✧"), h("span", { class:"spark s3", "aria-hidden":"true" }, "✦"),
     h("h1", {}, "Parents Meet ", h("span", {}, "AI")),
     h("p", {}, t("subtitle")),
     h("button", { class:"btn btn-primary btn-big btn-block", onclick:() => location.hash = "#/new" }, "✏️  " + t("startDiscussion"))));
