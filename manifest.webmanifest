@@ -1,14 +1,24 @@
 {
   "name": "Parents Meet AI",
-  "short_name": "Parents AI",
+  "short_name": "PMA",
   "description": "Parents learning about AI together.",
   "start_url": "./#/home",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#FBF8F3",
-  "theme_color": "#1F5F5B",
+  "background_color": "#F6F8FC",
+  "theme_color": "#2D5BD1",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ]
 }
