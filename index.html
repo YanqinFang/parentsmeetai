@@ -224,6 +224,13 @@
   .auth-free .txt{flex:1 1 180px}
   @media (max-width:520px){.auth-free .btn{width:100%}}
   a.btn{text-decoration:none}
+  .res-files{display:flex;gap:8px;flex-wrap:wrap}
+  .res-files .btn{padding:8px 12px;font-size:14px;color:var(--ink)}
+  .seg-chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:4px;scrollbar-width:none}
+  .seg-chips::-webkit-scrollbar{display:none}
+  .gchip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 13px;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer}
+  .gchip .n{margin-left:6px;font-size:12px;opacity:.75}
+  .gchip.on{background:var(--green);border-color:var(--green);color:#fff}
   .agree{font-size:13px;color:var(--muted);margin:8px 0 0}
   .prof-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
   .blocked-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
@@ -340,16 +347,18 @@ const SUPABASE_ANON_KEY = "sb_publishable_lfdgp3cPdkqqGrnM2zncQA_LbGSXWUK";
    To add one: upload the PDF into free/ on GitHub, then add a line below.
    FANGMATH_URL: your Prof. Fang Math website. Leave "" to hide that button. */
 const FANGMATH_URL = "";
+// Grade bands shown as tabs. Each topic = one card with its PDFs (notes / worksheet / answers).
+const GRADE_BANDS = [
+  { id:"k2",  en:"K–2",  zh:"K–2 年级" },
+  { id:"35",  en:"3–5",  zh:"3–5 年级" },
+  { id:"68",  en:"6–8",  zh:"6–8 年级" },
+  { id:"912", en:"9–12", zh:"9–12 年级" },
+];
 const FREE_MATH = [
-  { file:"free/multiply-divide-notes.pdf",      grade:"3–4", icon:"📘",
-    en:["Class Notes: Multiplying & Long Division", "4 ways to multiply a 3-digit number by a 1-digit number, plus 2-digit ÷ 1-digit long division, with worked examples."],
-    zh:["课堂笔记：乘法与长除法", "三位数乘一位数的 4 种方法，以及两位数除以一位数的长除法，每种都有例题。"] },
-  { file:"free/multiply-divide-worksheet.pdf",  grade:"3–4", icon:"✏️",
-    en:["Practice Worksheet", "Printable practice for the same skills, from easy to challenge."],
-    zh:["练习卷", "配套练习，可打印，由易到难。"] },
-  { file:"free/multiply-divide-answer-key.pdf", grade:"3–4", icon:"✅",
-    en:["Answer Key", "Step-by-step answers so you can check your child's work."],
-    zh:["答案", "分步答案，方便家长检查孩子的作业。"] },
+  { band:"35", grade:"3–4", icon:"🔢",
+    en:["Multiplying & Long Division", "4 ways to multiply a 3-digit number by a 1-digit number, plus 2-digit ÷ 1-digit long division, with worked examples."],
+    zh:["乘法与长除法", "三位数乘一位数的 4 种方法，以及两位数除以一位数的长除法，每种都有例题。"],
+    files:{ notes:"free/multiply-divide-notes.pdf", worksheet:"free/multiply-divide-worksheet.pdf", answers:"free/multiply-divide-answer-key.pdf" } },
 ];
 
 /* =====================================================================
@@ -432,6 +441,7 @@ const TEXT = {
     freeTitle:"Free Math Resources", freeCardText:"Printable notes & worksheets from a K–12 math teacher.", open:"Open",
     freeIntro:"Printable class notes, worksheets and answer keys from Prof. Fang Math, a K–12 math educator. Free for PMA parents — print them or share them with your child.",
     gradeLbl:"Grade", downloadPdf:"⬇ Download PDF", moreFrom:"More from Prof. Fang Math", moreText:"More practice, lessons and challenges for Grades K–12.", visitSite:"Visit website →",
+    fNotes:"Notes", fWorksheet:"Worksheet", fAnswers:"Answer key", comingSoon:"Coming soon — more resources for this grade are on the way.",
     authFreeText:"Sign up free and get printable math notes & worksheets.", seeFree:"See what's included", signupFree:"Sign up free",
   },
   zh:{
@@ -510,6 +520,7 @@ const TEXT = {
     freeTitle:"免费数学资料", freeCardText:"K–12 数学老师整理的笔记和练习卷，可打印。", open:"打开",
     freeIntro:"来自 Prof. Fang Math（K–12 数学老师）的课堂笔记、练习卷和答案。PMA 家长免费使用，可以打印，也可以分享给孩子。",
     gradeLbl:"年级", downloadPdf:"⬇ 下载 PDF", moreFrom:"更多 Prof. Fang Math 资料", moreText:"K–12 各年级的更多练习、课程和挑战题。", visitSite:"访问网站 →",
+    fNotes:"笔记", fWorksheet:"练习卷", fAnswers:"答案", comingSoon:"即将推出——这个年级的资料正在准备中。",
     authFreeText:"免费注册，即可下载可打印的数学笔记和练习卷。", seeFree:"看看有哪些", signupFree:"免费注册",
   }
 };
@@ -1682,19 +1693,42 @@ function freeCard(){
     h("div", { class:"txt" }, h("b", {}, t("freeTitle")), h("span", {}, t("freeCardText"))),
     h("span", { class:"go" }, t("open") + " ›"));
 }
+let freeBand = "all";
 function freeItem(r, withLink){
   const [title, desc] = r[lang === "zh" ? "zh" : "en"];
+  const kinds = [["notes", "📘", t("fNotes")], ["worksheet", "✏️", t("fWorksheet")], ["answers", "✅", t("fAnswers")]].filter(k => r.files[k[0]]);
   return h("div", { class:"res" },
     h("div", { class:"ic", "aria-hidden":"true" }, r.icon),
     h("div", { class:"txt" },
       h("b", {}, title, h("span", { class:"grade-chip" }, (lang === "zh" ? r.grade + " " + t("gradeLbl") : t("gradeLbl") + " " + r.grade))),
       h("p", {}, desc),
-      withLink ? h("a", { class:"btn btn-primary", href:r.file, target:"_blank", rel:"noopener" }, t("downloadPdf")) : null));
+      withLink ? h("div", { class:"res-files" }, kinds.map(([k, ic, lbl]) => h("a", { class:"btn btn-ghost", href:r.files[k], target:"_blank", rel:"noopener" }, ic + " " + lbl)))
+               : h("p", { class:"small", style:"margin:0" }, kinds.map(k => k[1] + " " + k[2]).join(" · "))));
 }
 function pageFree(view){
   setTop(t("freeTitle"), "#/home");
-  view.append(h("p", { class:"muted", style:"margin:4px 0 16px" }, t("freeIntro")));
-  FREE_MATH.forEach(r => view.append(freeItem(r, true)));
+  view.append(h("p", { class:"muted", style:"margin:4px 0 12px" }, t("freeIntro")));
+  const bandName = b => b[lang === "zh" ? "zh" : "en"];
+  const count = id => FREE_MATH.filter(r => r.band === id).length;
+  const list = h("div");
+  const chips = h("div", { class:"seg-chips" },
+    [{ id:"all", en:t("all"), zh:t("all") }].concat(GRADE_BANDS).map(b => {
+      const n = b.id === "all" ? FREE_MATH.length : count(b.id);
+      return h("button", { class:"gchip" + (freeBand === b.id ? " on" : ""), "aria-pressed": String(freeBand === b.id),
+        onclick:e => { freeBand = b.id; chips.querySelectorAll(".gchip").forEach(x => { const on = x === e.currentTarget; x.classList.toggle("on", on); x.setAttribute("aria-pressed", String(on)); }); draw(); } },
+        bandName(b), h("span", { class:"n" }, n));
+    }));
+  function draw(){
+    list.replaceChildren();
+    const bands = freeBand === "all" ? GRADE_BANDS.filter(b => count(b.id)) : GRADE_BANDS.filter(b => b.id === freeBand);
+    bands.forEach(b => {
+      list.append(h("div", { class:"section-title" }, h("h3", {}, lang === "zh" ? b.zh : "Grades " + b.en)));
+      const items = FREE_MATH.filter(r => r.band === b.id);
+      if (items.length) items.forEach(r => list.append(freeItem(r, true)));
+      else list.append(h("div", { class:"empty", style:"padding:24px 10px" }, h("div", { class:"big" }, "🌱"), t("comingSoon")));
+    });
+  }
+  view.append(chips, list); draw();
   if (FANGMATH_URL) view.append(h("div", { class:"hello", style:"margin-top:18px" },
     h("h1", { style:"font-size:22px" }, t("moreFrom")), h("p", {}, t("moreText")),
     h("a", { class:"btn btn-primary btn-block", href:FANGMATH_URL, target:"_blank", rel:"noopener" }, t("visitSite"))));
